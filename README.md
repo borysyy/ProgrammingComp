@@ -1,3 +1,5 @@
+# Docker Instructions
+
 **How to build the docker file:**
 
 `docker build --build-arg USER=username -t users .`
