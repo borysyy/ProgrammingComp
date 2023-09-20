@@ -32,7 +32,7 @@
 
 `ssh-keygen -f "/home/slava/.ssh/known_hosts" -R "localhost"`
 
-**How a student could sumbit their solution**
+**How a student could submit their solution**
 
 `./a.out > /tmp/username.txt`
 
