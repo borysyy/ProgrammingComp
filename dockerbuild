@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Checking if directory was entered
+if [ $# -ne 1 ]; then
+    echo "Must include path to the Dockerfile directory"
+    exit 1
+fi
+
+directory="$1"
+
+# Building the docker file
+docker build -t users $directory 
