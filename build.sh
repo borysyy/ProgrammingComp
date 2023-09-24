@@ -1,4 +1,4 @@
 #!/bin/bash
 
-#Building the docker
+#Building the docker file
 docker build -t users .
