@@ -8,11 +8,26 @@ fi
 
 username="$1"
 
+PORT=2200
+
+while true; do
+nc -zv localhost $PORT > /dev/null 
+
+    if [ $? -eq 0 ]; then
+    PORT=$(expr $PORT + 1)
+    else
+        break
+    fi
+
+done 
+
 # Printing that the container was successful 
 echo "Running $username's container"
 
+echo "Using port $PORT"
+
 # Running the docker image
-docker run -t -v ~/tmp:/tmp -e USER="$username" -p 22:22 users 
+docker run -t -v ~/tmp:/tmp -e USER="$username" -p $PORT:22 users 
  
 
    
