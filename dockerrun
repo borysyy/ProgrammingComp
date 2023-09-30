@@ -6,13 +6,16 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+# Username argument
 username="$1"
 
+# Port variable
 PORT=2200
 
+# Check if the port is open
 while true; do
 nc -zv localhost $PORT > /dev/null 
-
+    # If not go to the next one
     if [ $? -eq 0 ]; then
     PORT=$(expr $PORT + 1)
     else
@@ -24,6 +27,7 @@ done
 # Printing that the container was successful 
 echo "Running $username's container"
 
+# Printing what port you're using
 echo "Using port $PORT"
 
 # Running the docker image
