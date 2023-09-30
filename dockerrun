@@ -1,12 +1,16 @@
 #!/bin/bash
 
 # Checking if username was entered
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <username>"
-    exit 1
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 <username> [<usedefaultpasswd>]"
+  exit 1
+elif [ $# -gt 2 ]; then
+  echo "Usage: $0 <username> [<usedefaultpasswd>]"
+  exit 1
 fi
 
 username="$1"
+defaultpasswd="$2"
 
 PORT=2200
 
@@ -21,13 +25,21 @@ nc -zv localhost $PORT > /dev/null
 
 done 
 
+userdirectory=$(realpath ~/Desktop/Submissions/$username)
+
+if [ ! -d "$userdirectory" ]; then
+    # If it doesn't exist, create it
+    mkdir -p "$userdirectory"
+fi
+
+
 # Printing that the container was successful 
 echo "Running $username's container"
 
 echo "Using port $PORT"
 
 # Running the docker image
-docker run -t -v ~/tmp:/tmp -e USER="$username" -p $PORT:22 users 
+docker run -t -v ~/Desktop/Problems:/problems:ro -v "$userdirectory":/submissions -e USER="$username" -e DEFAULTPASSWD="$defaultpasswd" -p $PORT:22 users 
  
 
    

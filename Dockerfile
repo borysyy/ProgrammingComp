@@ -12,8 +12,10 @@ RUN apt install -y gcc g++
 RUN apt install -y nano 
 #Runs a command to start ssh
 RUN service ssh start
+#
+RUN mkdir /problems /submissions
 #Executable for the containers
-CMD useradd -m $USER -s /bin/bash; ((echo 'password'; echo 'password') | passwd $USER); passwd -e $USER; mkdir /home/$USER/.ssh; chown -R $USER:$USER /home/$USER/.ssh; /usr/sbin/sshd -D;
+CMD useradd -m $USER -s /bin/bash; ((echo 'password'; echo 'password') | passwd $USER); if [ "$DEFAULTPASSWD" = 1 ]; then echo 'Using default password'; else passwd -e $USER; fi; mkdir /home/$USER/.ssh; chown -R $USER:$USER /home/$USER/.ssh; /usr/sbin/sshd -D; 
 #Tells Docker to get all its information required during the runtime from a specified Port.
 EXPOSE 22
 

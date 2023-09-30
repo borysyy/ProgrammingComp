@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for ID in $(docker ps --format "{{.ID}}")
+do
+    docker stop $ID
+done

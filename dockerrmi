@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for ID in $(docker images --format "{{.ID}}")
+do
+    docker rmi -f $ID
+done
