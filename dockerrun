@@ -9,16 +9,19 @@ else if [ (count $argv) -gt 2 ]
     exit 1
 end
 
-set username $argv[1]
-set defaultpasswd $argv[2]
+# Username argument
+username="$1"
+defaultpasswd="$2"
 
-set PORT 2200
+# Port variable
+PORT=2200
 
-while true
-    nc -zv localhost $PORT > /dev/null 
-
-    if test $status -eq 0
-        set PORT (math $PORT + 1)
+# Check if the port is open
+while true; do
+nc -zv localhost $PORT > /dev/null 
+    # If not go to the next one
+    if [ $? -eq 0 ]; then
+    PORT=$(expr $PORT + 1)
     else
         break
     end
@@ -33,6 +36,11 @@ end
 
 # Printing that the container was successful 
 echo "Running $username's container"
+<<<<<<< HEAD
+=======
+
+# Printing what port you're using
+>>>>>>> cd6e9c49d53329f025ad3266835dd74d535de40c
 echo "Using port $PORT"
 
 # Running the Docker image
