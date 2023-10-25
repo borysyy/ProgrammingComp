@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Execution</title>
+</head>
+
+<body>
+    <div style="text-align: center;">
+        <h1>Upload and Execute Code</h1>
+        <form action="/execute" method="post" enctype="multipart/form-data" id="code-form">
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username">
+            <br>
+            <label for="file">File:</label>
+            <input type="file" name="file" id="file">
+            <br>
+            <input type="submit" value="Submit">
+        </form>
+
+    </div>
+
+    <!-- Add a section to display the code execution results -->
+    <div style="text-align: center;">
+        <h2>Code Execution Results</h2>
+        <pre id="output" style="white-space: pre-wrap;"></pre>
+    </div>
+
+    <script>
+        document.getElementById('code-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.getElementById('code-form'));
+
+            fetch('http://localhost:3000/execute', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('output').innerText = data.output;
+                })
+                .catch(error => {
+                    document.getElementById('output').innerText = 'An error occurred: ' + error.message;
+                });
+        });
+    </script>
+
+
+</body>
+
+</html>

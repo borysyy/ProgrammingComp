@@ -1,12 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env fish
 
 # Checking if directory was entered
-if [ $# -ne 1 ]; then
+if test (count $argv) -ne 1
     echo "Must include path to the Dockerfile directory"
     exit 1
-fi
+end
 
-directory="$1"
+set directory $argv[1]
 
-# Building the docker file
-docker build -t users $directory 
+# Building the Dockerfile
+docker build -t users $directory
