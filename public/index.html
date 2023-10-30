@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 
 <head>
+    <title>Coding Competition</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Code Execution</title>
+    <link rel="stylesheet" href="src/css/styles.css">
+    <script type="module" src="src/index.js"></script>
 </head>
 
-<body>
+
+
+<body data-bs-theme="dark">
+    <div class="container-fluid bg-primary">
+        <row>
+            <div class="col-8">
+                <h1 class="display-4">SUNY Poly Programming Competition</h1>
+            </div>
+        </row>
+
+        <div class="container-fluid">
+            <nav class="navbar navbar-expand-lg navbar-light bg-primary" id="navigation">
+            </nav>
+        </div>
+    </div>
+
+
+
+    <!-- 
     <div style="text-align: center;">
         <h1>Upload and Execute Code</h1>
         <form action="/execute" method="post" enctype="multipart/form-data" id="code-form">
@@ -22,7 +42,7 @@
 
     </div>
 
-    <!-- Add a section to display the code execution results -->
+   
     <div style="text-align: center;">
         <h2>Code Execution Results</h2>
         <pre id="output" style="white-space: pre-wrap;"></pre>
@@ -46,8 +66,11 @@
                     document.getElementById('output').innerText = 'An error occurred: ' + error.message;
                 });
         });
-    </script>
+    </script>  -->
 
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 </body>
 
