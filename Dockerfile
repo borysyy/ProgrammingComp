@@ -20,19 +20,19 @@
 # EXPOSE 22
 
 # Use an official Ubuntu image as a parent image
-# FROM ubuntu:20.04
+FROM ubuntu:20.04
 
-FROM gcc:latest
+# FROM gcc:latest
 
 # Set environment variables to avoid interactive prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# # Update and install essential packages
-# RUN apt-get update -y && apt-get install -y \
-#     build-essential \     
-#     cmake \               
-#     gdb \     
-#     g++ 
+# Update and install essential packages
+RUN apt-get update -y && apt-get install -y \
+    build-essential \     
+    cmake \               
+    gdb \     
+    g++ 
 
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 
