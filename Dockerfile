@@ -20,18 +20,19 @@
 # EXPOSE 22
 
 # Use an official Ubuntu image as a parent image
-FROM ubuntu:20.04
+# FROM ubuntu:20.04
+
+FROM gcc:latest
 
 # Set environment variables to avoid interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive, LC_CTYPE=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Update and install essential packages
-RUN apt-get update -y && apt-get install -y \
-    build-essential \     
-    cmake \               
-    gdb \     
-    g++ 
-
+# # Update and install essential packages
+# RUN apt-get update -y && apt-get install -y \
+#     build-essential \     
+#     cmake \               
+#     gdb \     
+#     g++ 
 
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 
@@ -40,8 +41,7 @@ COPY submissions/ /submissions/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set the entry point to the script
-# ENTRYPOINT ["/entrypoint.sh"]
+
 
 
 

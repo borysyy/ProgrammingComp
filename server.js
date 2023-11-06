@@ -79,7 +79,7 @@ app.post('/execute', upload.single('file'), async (req, res) => {
         await container.stop();
 
         // Remove the container
-        await container.remove();
+        // await container.remove();
 
         res.json({ result: 'Success', output });
     } else {
