@@ -18,12 +18,13 @@
 # CMD useradd -m $USER -s /bin/bash; ((echo 'password'; echo 'password') | passwd $USER); if [ "$DEFAULTPASSWD" = 1 ]; then echo 'Using default password'; else passwd -e $USER; fi; mkdir /home/$USER/.ssh; chown -R $USER:$USER /home/$USER/.ssh; /usr/sbin/sshd -D; 
 # #Tells Docker to get all its information required during the runtime from a specified Port.
 # EXPOSE 22
+# FROM gcc:latest
 
 # Use an official Ubuntu image as a parent image
 FROM ubuntu:20.04
 
 # Set environment variables to avoid interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive, LC_CTYPE=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install essential packages
 RUN apt-get update -y && apt-get install -y \
@@ -32,7 +33,6 @@ RUN apt-get update -y && apt-get install -y \
     gdb \     
     g++ 
 
-
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 
 
@@ -40,8 +40,7 @@ COPY submissions/ /submissions/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set the entry point to the script
-# ENTRYPOINT ["/entrypoint.sh"]
+
 
 
 
