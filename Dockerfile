@@ -18,7 +18,6 @@
 # CMD useradd -m $USER -s /bin/bash; ((echo 'password'; echo 'password') | passwd $USER); if [ "$DEFAULTPASSWD" = 1 ]; then echo 'Using default password'; else passwd -e $USER; fi; mkdir /home/$USER/.ssh; chown -R $USER:$USER /home/$USER/.ssh; /usr/sbin/sshd -D; 
 # #Tells Docker to get all its information required during the runtime from a specified Port.
 # EXPOSE 22
-# FROM gcc:latest
 
 # Use an official Ubuntu image as a parent image
 FROM ubuntu:20.04
@@ -33,12 +32,15 @@ RUN apt-get update -y && apt-get install -y \
     gdb \     
     g++ 
 
+RUN mkdir /output && chmod 777 /output
+
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 
 
 # Define an entry point script that will be executed by the Node.js server
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
 
 
 
