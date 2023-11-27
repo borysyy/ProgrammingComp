@@ -2,99 +2,17 @@
 <html lang="en-US">
 
 <head>
-    <title>Coding Competition</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="src/css/styles.css">
-    <script type="module" src="src/index.js"></script>
+  <title>Coding Competition</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="src/css/styles.css">
 </head>
 
-
-
 <body data-bs-theme="dark">
-    <div class="container-fluid bg-primary">
-        <row>
-            <div class="col-8">
-                <h1 class="display-4">SUNY Poly Programming Competition</h1>
-            </div>
-        </row>
-
-        <div class="container-fluid">
-            <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-                <div class="container-fluid">
-                    <a class="navbar-brand">Welcome!</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="#">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Features</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="#">Pricing</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link disabled" href="#" tabIndex="-1" aria-disabled="true">Disabled</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </div>
-    </div>
-
-
-
-    <!-- 
-    <div style="text-align: center;">
-        <h1>Upload and Execute Code</h1>
-        <form action="/execute" method="post" enctype="multipart/form-data" id="code-form">
-            <label for="username">Username:</label>
-            <input type="text" name="username" id="username">
-            <br>
-            <label for="file">File:</label>
-            <input type="file" name="file" id="file">
-            <br>
-            <input type="submit" value="Submit">
-        </form>
-
-    </div>
-
-   
-    <div style="text-align: center;">
-        <h2>Code Execution Results</h2>
-        <pre id="output" style="white-space: pre-wrap;"></pre>
-    </div>
-
-    <script>
-        document.getElementById('code-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-
-            const formData = new FormData(document.getElementById('code-form'));
-
-            fetch('http://localhost:3000/execute', {
-                method: 'POST',
-                body: formData,
-            })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('output').innerText = data.output;
-                })
-                .catch(error => {
-                    document.getElementById('output').innerText = 'An error occurred: ' + error.message;
-                });
-        });
-    </script>  -->
-
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script type="module" src="./src/index.js"></script>
 </body>
 
 </html>
