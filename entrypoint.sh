@@ -8,7 +8,7 @@ fi
 g++ -o user_program "$1" 
 
 if [ $? -eq 0 ]; then
-    ./user_program
+    ./user_program > /output/output.txt
 else
     echo "Compilation failed."
 fi

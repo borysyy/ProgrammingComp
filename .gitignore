@@ -1,5 +1,7 @@
 .*
 !.gitignore
-node_modules
-submissions
-problems
+node_modules/
+submissions/
+problems/
+dist/
+output/
