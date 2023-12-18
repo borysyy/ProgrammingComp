@@ -1,0 +1,5 @@
+#!/usr/bin/env fish
+
+for ID in (docker ps --format "{{.ID}}")
+    docker stop $ID
+end
