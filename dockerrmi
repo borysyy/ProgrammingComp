@@ -1,5 +1,5 @@
-#!/usr/bin/env fish
+#!/bin/bash
 
-for ID in (docker images --format "{{.ID}}")
-    docker rmi -f $ID
-end
+# Get IDs of Docker images and remove them
+docker images -q | xargs docker rmi -f
+
