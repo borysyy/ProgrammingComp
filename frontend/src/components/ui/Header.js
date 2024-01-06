@@ -12,15 +12,6 @@ const Header = () => {
               <Navigation />
             </div>
           </div>
-          <div className="col-8 d-flex justify-content-end">
-            <img
-              className="header-img"
-              src={require('../../pictures/Poly_pfp.png').default}
-              alt="SUNY Poly Logo"
-              role="img"
-              focusable="false"
-            />
-          </div>
         </div>
       </div>
     </div>
