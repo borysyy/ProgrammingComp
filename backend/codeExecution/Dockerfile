@@ -40,8 +40,7 @@ COPY submissions/ /submissions/
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Set the entry point to the script
-# ENTRYPOINT ["/entrypoint.sh"]
+
 
 
 
