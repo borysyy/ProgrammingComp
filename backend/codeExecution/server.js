@@ -11,7 +11,6 @@ const cors = require('cors');
 
 
 // Serve static files from 'public' and 'output' directories
-app.use(express.static('public'));
 app.use(express.static('output'));
 
 app.use(cors());
