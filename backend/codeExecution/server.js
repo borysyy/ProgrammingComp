@@ -98,9 +98,7 @@ app.post('/execute', upload.single('file'), async (req, res) => {
 });
 
 function filterOutputFile(logString, username){
-    // Explanation provided above removeRepeatedErrors function
-    const adjustedOutput = removeRepeatedErrors(logString)
-    const lines = adjustedOutput.split('\n')
+    const lines = logString.split('\n')
     let filteredOutput = ''
 
     for (const line of lines) {
@@ -126,29 +124,6 @@ function filterOutputFile(logString, username){
     }
 
     return filteredOutput
-}
-
-// Basically, before we even get to the filterOutputFile function if there are errors,
-// they are repeated, as in:
-//     error line 1
-//     error line 2
-//     error line 1
-//     error line 2
-// I can't exactly figure out how to fix this while the data is being put to the output.txt,
-// so I figured that since we have to filter these errors anyways, we might as well just
-// address this problem in the brute-force way.
-function removeRepeatedErrors(logString){
-    // Split the content into lines
-    const lines = logString.split('\n');
-
-    // Determine the index to keep only the first half of lines
-    const halfIndex = Math.floor(lines.length / 2);
-
-    // Keep only the first half of lines
-    const firstHalf = lines.slice(0, halfIndex).join('\n');
-
-    // Return the modified content
-    return firstHalf;
 }
 
 // Start the Express.js server
