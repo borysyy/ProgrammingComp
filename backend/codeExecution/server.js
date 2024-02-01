@@ -83,14 +83,17 @@ app.post('/execute', upload.single('file'), async (req, res) => {
         // Stop and remove the container after execution
         await container.stop();
         await container.remove();
+
         // Read output file and send data as response
         fs.readFile(`${__dirname}/output/output.txt`, 'utf8', (err, data) => {
             if (err) {
                 console.error('Error reading the file:', err);
                 return;
             }
-
-            filteredData = filterOutputFile(data, req.body.username)
+            
+            // If there are errors, then filter but if not then don't
+            const hasErrors = data.toLowerCase().includes('error');
+            const filteredData = hasErrors ? filterOutputFile(data, req.body.username) : data
 
             res.send({ output: filteredData })
         });
@@ -106,7 +109,7 @@ function filterOutputFile(logString, username){
         // but every uncompilable code I've submitted has shown that the first 8 characters of
         // output.txt is nonsense characters.
         const cleanLine = line.slice(8)
-        
+
         // Remove file paths and keep file names
         cleanLine.replace(new RegExp(`\\/submissions\\/${username}\\/`), '').trim()
 
