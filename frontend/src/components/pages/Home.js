@@ -4,11 +4,13 @@ const Home = () => {
   const handleFormSubmit = (event) => {
     event.preventDefault();
     const formData = new FormData(event.target);
+    console.log('Form data:', formData);
+
     fetchFormData(formData);
   };
 
   const fetchFormData = (formData) => {
-    fetch('http://localhost:3000/execute', {
+    fetch('http://localhost:3001/execute', {
       method: 'POST',
       body: formData,
     })
@@ -23,13 +25,13 @@ const Home = () => {
 
   useEffect(() => {
     const script = document.createElement('script');
-    script.innerHTML = `
+    script.innerHTML = 
       document.getElementById('code-form').addEventListener('submit', function (event) {
         event.preventDefault();
         const formData = new FormData(document.getElementById('code-form'));
         fetchFormData(formData);
       });
-    `;
+    ;
     document.body.appendChild(script);
 
     return () => {
@@ -66,7 +68,9 @@ const Home = () => {
 
       <div className="mt-4">
         <h2>Code Execution Results</h2>
-        <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        <div style={{ textAlign: 'left', display: 'inline-block', margin: '0 auto' }}>
+          <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        </div>
       </div>
     </div>
   );
