@@ -68,7 +68,9 @@ const Home = () => {
 
       <div className="mt-4">
         <h2>Code Execution Results</h2>
-        <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        <div style={{ textAlign: 'left', display: 'inline-block', margin: '0 auto' }}>
+          <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        </div>
       </div>
     </div>
   );
