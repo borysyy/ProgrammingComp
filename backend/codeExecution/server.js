@@ -8,7 +8,8 @@ const Docker = require('dockerode');
 const docker = new Docker();
 const port = 3001;
 const cors = require('cors');
-
+const http = require('http');
+const mariadb = require ('mariadb');
 
 // Serve static files from 'public' and 'output' directories
 app.use(express.static('output'));
@@ -133,3 +134,31 @@ function filterOutputFile(logString, username){
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
+	//create connection pool
+	const pool = mariadb.createPool({
+		host : 'localhost:3306',
+		user : 'giardim',
+		password : 'SUNYPoly2023',
+		database : 'SUNYPolyCompetitiveProgramming'
+	});
+	console.log('POOL: ', pool);
+
+app.get('/', async(req, res) =>{
+	let conn;
+	try {	
+		console.write('***GETTING CONNECTION***');
+		conn = await pool.getConnection();
+		console.write('***GETTING QUERY***');
+		const username = pool.query('SELECT user_name FROM users');
+		console.log(username);
+		const jsonS = JSON.stringify(username);
+		res.writeHead(200, {'Content-Type' : 'Text/html'});
+		res.send(jsonS);
+		pool.end();
+	}
+	catch(e){
+		console.log('***COULD NOT CONNECT TO DATABASE ', e, ' ***');
+	}
+});
+
