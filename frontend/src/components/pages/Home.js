@@ -1,43 +1,53 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'
 
 const Home = () => {
   const handleFormSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    console.log('Form data:', formData);
+    event.preventDefault()
+    const formData = new FormData(event.target)
+    console.log('Form data:', formData)
 
-    fetchFormData(formData);
-  };
+    fetchFormData(formData)
+  }
 
   const fetchFormData = (formData) => {
     fetch('http://localhost:3001/execute', {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
       .then((data) => {
-        document.getElementById('output').innerText = data.output;
+        console.log('Response data:', data) // Log the response data
+
+        document.getElementById('compilerOutput').innerText =
+          data.compilerOutput
+        document.getElementById('programOutput').innerText = data.programOutput
+        document.getElementById('programErrors').innerText = data.programErrors
       })
       .catch((error) => {
-        document.getElementById('output').innerText = 'An error occurred: ' + error.message;
-      });
-  };
+        console.error('An error occurred:', error)
+      })
+  }
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.innerHTML = 
-      document.getElementById('code-form').addEventListener('submit', function (event) {
-        event.preventDefault();
-        const formData = new FormData(document.getElementById('code-form'));
-        fetchFormData(formData);
-      });
-    ;
-    document.body.appendChild(script);
+  // useEffect(() => {
+  //   const script = document.createElement('script')
+  //   script.innerHTML = document
+  //     .getElementById('code-form')
+  //     .addEventListener('submit', function (event) {
+  //       event.preventDefault()
+  //       const formData = new FormData(document.getElementById('code-form'))
+  //       fetchFormData(formData)
+  //     })
+  //   document.body.appendChild(script)
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  //   return () => {
+  //     document.body.removeChild(script)
+  //   }
+  // }, [])
 
   return (
     <div className="container text-center mt-4">
@@ -49,31 +59,55 @@ const Home = () => {
         id="code-form"
         onSubmit={handleFormSubmit}
       >
+        {/* Username input */}
         <div className="mb-3">
           <label htmlFor="username" className="form-label">
             Username:
           </label>
-          <input type="text" name="username" id="username" className="form-control" />
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="form-control"
+          />
         </div>
+
+        {/* File input */}
         <div className="mb-3">
           <label htmlFor="file" className="form-label">
             File:
           </label>
           <input type="file" name="file" id="file" className="form-control" />
         </div>
+
+        {/* Submit button */}
         <button type="submit" className="btn btn-primary">
           Submit
         </button>
       </form>
 
+      {/* Code Execution Results */}
       <div className="mt-4">
-        <h2>Code Execution Results</h2>
-        <div style={{ textAlign: 'left', display: 'inline-block', margin: '0 auto' }}>
-          <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        <h2>Code Execution Results:</h2>
+        <div className="container mt-4">
+          <div className="row">
+            <div className="col-md-4">
+              <h3 className="mb-0 text-center">Compiler Output:</h3>
+              <pre id="compilerOutput" style={{ whiteSpace: 'pre-wrap' }}></pre>
+            </div>
+            <div className="col-md-4">
+              <h3 className="mb-0 text-center">Program Output:</h3>
+              <pre id="programOutput" style={{ whiteSpace: 'pre-wrap' }}></pre>
+            </div>
+            <div className="col-md-4">
+              <h3 className="mb-0 text-center">Program Error:</h3>
+              <pre id="programErrors" style={{ whiteSpace: 'pre-wrap' }}></pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

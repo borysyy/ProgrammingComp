@@ -9,26 +9,25 @@ const docker = new Docker()
 const port = 3001
 const cors = require('cors')
 
-
 // Serve static files from 'public' and 'output' directories
 app.use(express.static('output'))
 
-app.use(cors());
+app.use(cors())
 
 // Parse URL-encoded form data
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // Configure storage for uploaded files
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const userDirectory = `submissions/${req.body.username}`
-        fs.mkdirSync(userDirectory, { recursive: true })
-        cb(null, userDirectory)
-    },
-    filename: (req, file, cb) => {
-        cb(null, file.originalname)
-    },
-});
+  destination: (req, file, cb) => {
+    const userDirectory = `submissions/${req.body.username}`
+    fs.mkdirSync(userDirectory, { recursive: true })
+    cb(null, userDirectory)
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname)
+  },
+})
 
 // Set up multer middleware for file uploads
 const upload = multer({ storage: storage })
@@ -41,106 +40,76 @@ process.chdir(__dirname)
 
 // Handle POST request to '/execute' endpoint
 app.post('/execute', upload.single('file'), async (req, res) => {
-    const { code } = req.body
+  await fs.promises.writeFile(
+    `${__dirname}/output/compiler_output.txt`,
+    '',
+    'utf8',
+  )
+  await fs.promises.writeFile(
+    `${__dirname}/output/program_output.txt`,
+    '',
+    'utf8',
+  )
+  await fs.promises.writeFile(
+    `${__dirname}/output/program_errors.txt`,
+    '',
+    'utf8',
+  )
 
-    if (req.file) {
-        const sourceCodeFile = `/submissions/${req.body.username}/${req.file.originalname}`
-        const command = ['/entrypoint.sh', sourceCodeFile]
-               
-        // Flush output.txt before creating the container
-        fs.writeFileSync(`${__dirname}/output/output.txt`, '', 'utf8')
+  const { code } = req.body
 
-        // Create a Docker container
-        const container = await docker.createContainer({
-            Image: 'my-cpp-app',
-            Cmd: command,
-            AttachStdout: true,
-            AttachStderr: true,
-            Detach: true,
-            HostConfig: {
-                Binds: [
-                    `${__dirname}/submissions:/submissions`,
-                    `${__dirname}/output:/output`,
-                ],
-            },
-        });
+  if (req.file) {
+    const sourceCodeFile = `/submissions/${req.body.username}/${req.file.originalname}`
+    const command = ['/entrypoint.sh', sourceCodeFile]
 
-        // Start the container
-        await container.start();
+    // Create a Docker container
+    const container = await docker.createContainer({
+      Image: 'code-execute',
+      Cmd: command,
+      AttachStdout: true,
+      AttachStderr: true,
+      Detach: true,
+      HostConfig: {
+        Binds: [
+          `${__dirname}/submissions:/submissions`,
+          `${__dirname}/output:/output`,
+        ],
+      },
+    })
 
-        // Attach to container output (stdout and stderr)
-        const logs = await container.logs({
-            follow: true,
-            stdout: true,
-            stderr: true,
-        });
+    // Start the container
+    await container.start()
 
-        // Stop and remove the container after execution
-        await container.stop()
-        await container.remove()
-
-        // Read output from logs and write to output.txt
-        logs.on('data', (data) => {
-            fs.appendFileSync(`${__dirname}/output/output.txt`, data.toString(), 'utf8')
-        })
-
-        // Read output file and send data as response
-        fs.readFile(`${__dirname}/output/output.txt`, 'utf8', (err, data) => {
-            if (err) {
-                console.error('Error reading the file:', err)
-                return
-            }
-            
-            // If there are errors, then filter but if not then don't
-            const errorRegex = /error|failed|exception/i
-            const hasErrors = errorRegex.test(data)
-            const filteredData = hasErrors ? filterOutputFile(data, req.body.username) : data
-
-            res.send({ output: filteredData })
-        });
+    // Stop and remove the container after execution
+    const containerData = await container.inspect()
+    if (containerData.State.Running) {
+      await container.stop()
     }
-});
+    await container.remove()
 
-function filterOutputFile(logString, username){
-    const adjustedOutput = removeRepeatedErrors(logString)
-    const lines = adjustedOutput.split('\n')
-    let filteredOutput = ''
+    // Read output file and send data as response
+    try {
+      const compilerOutput = await fs.promises.readFile(
+        `${__dirname}/output/compiler_output.txt`,
+        'utf8',
+      )
+      const programOutput = await fs.promises.readFile(
+        `${__dirname}/output/program_output.txt`,
+        'utf8',
+      )
+      const programErrors = await fs.promises.readFile(
+        `${__dirname}/output/program_errors.txt`,
+        'utf8',
+      )
 
-    for (const line of lines) {
-        // Removes the first 8 characters of each line. This may seem hard coded,
-        // but every uncompilable code I've submitted has shown that the first 8 characters of
-        // output.txt are nonsense characters.
-        const cleanLine = line.slice(8)
-
-        // // Remove unwanted characters at the beginning of each line
-        const filteredLine = cleanLine.replace(/^\s*[^:]+:\s*/, ' ')
-
-        // Remove non-printable ASCII characters
-        const printableLine = filteredLine.replace(/[^ -~]/g, ' ')
-
-        filteredOutput += `${printableLine}\n`
+      res.send({ compilerOutput, programOutput, programErrors })
+    } catch (err) {
+      console.error('Error reading the file:', err)
     }
-
-    return filteredOutput
-}
-
-// To deal with the errors being repeated twice.
-// Basically a brute-force solution but it works for now.
-function removeRepeatedErrors(logString){
-    // Split the content into lines
-    const lines = logString.split('\n')
-
-    // Determine the index to keep only the first half of lines
-    const halfIndex = Math.floor(lines.length / 2)
-
-    // Keep only the first half of lines
-    const firstHalf = lines.slice(0, halfIndex).join('\n')
-
-    // Return the firstHalf
-    return firstHalf
-}
+  }
+})
 
 // Start the Express.js server
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`)
-});
+  console.log(`Server is running on port ${port}`)
+})
