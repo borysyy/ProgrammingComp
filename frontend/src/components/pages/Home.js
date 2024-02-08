@@ -10,7 +10,7 @@ const Home = () => {
   }
 
   const fetchFormData = (formData) => {
-    fetch('http://localhost:3001/execute', {
+    fetch('http://localhost:3000/server/execute', {
       method: 'POST',
       body: formData,
     })

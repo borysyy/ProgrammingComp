@@ -1,21 +1,21 @@
+// server.js
 const express = require('express')
 const multer = require('multer')
 const bodyParser = require('body-parser')
 const fs = require('fs')
 const path = require('path')
-const app = express()
+const router = express.Router()
 const Docker = require('dockerode')
 const docker = new Docker()
-const port = 3001
 const cors = require('cors')
 
 // Serve static files from 'public' and 'output' directories
-app.use(express.static('output'))
+router.use(express.static('output'))
 
-app.use(cors())
+router.use(cors())
 
 // Parse URL-encoded form data
-app.use(bodyParser.urlencoded({ extended: true }))
+router.use(bodyParser.urlencoded({ extended: true }))
 
 // Configure storage for uploaded files
 const storage = multer.diskStorage({
@@ -33,13 +33,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 // Parse incoming JSON data
-app.use(express.json())
+router.use(express.json())
 
 // Set the working directory within the Node.js server
 process.chdir(__dirname)
 
 // Handle POST request to '/execute' endpoint
-app.post('/execute', upload.single('file'), async (req, res) => {
+router.post('/execute', upload.single('file'), async (req, res) => {
   await fs.promises.writeFile(
     `${__dirname}/output/compiler_output.txt`,
     '',
@@ -109,7 +109,6 @@ app.post('/execute', upload.single('file'), async (req, res) => {
   }
 })
 
-// Start the Express.js server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`)
-})
+module.exports = router
+
+
