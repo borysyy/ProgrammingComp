@@ -1,29 +1,33 @@
+const path = require('path');
 const sqlite3 = require("sqlite3").verbose();
-const DATABASE = './SUNYPolyCompetitiveProgramming.db'
+const DATABASE = path.resolve(__dirname, "database.db")
 let sql;
 
-class SPCP{
-	SPCP(){
-		//connect to db
-		const db = new sqlite3.Database(DATABASE, sqlite3.OPEN_READWRITE, (err) =>{
-			if (err){
-				return console.error(err.message);
-			}
-		});
-	}
 
-	//create default table
-	createTables = () => {
-		sql = 'CREATE TABLE users (user_id INTEGER PRIMARY KEY, username VARCHAR(64) NOT NULL, password VARCHAR(64) NOT  NULL,'
-		sql += ' email VARCHAR(255) NOT NULL, teamname DEFAULT NULL);';
+//connect to db
+const db = new sqlite3.Database(DATABASE, sqlite3.OPEN_READWRITE, (err) =>{
+	if (err){
+		return console.error(err.message);
+	}
+	else{
+		return console.log("Database opened");
+	}
+});
+
+//updates table
+function updateUsersTable(username, password, email){
+	try{
+		sql = "INSERT INTO users (username, password, email, teamname) VALUES ('" + username + "', '" + password + "', '" + email + "', null);";
 		db.run(sql);
 	}
-
-	//updates table
-	updateUsersTable = (username, password, email) => {
-		sql = 'INSERT INTO users (username, password, email) VALUES ' + username + ', ' + password + ', ' + email + ');'
-		db.run();
+	catch (e){
+		if (e == SQLITE_CONSTRAINT){
+			return 400;
+		}
+		console.log ("***ERROR: " + e);
+		return 400;
 	}
+	return 200;
 }
 
-module.exports = SPCP;
+exports.updateUsersTable = updateUsersTable;

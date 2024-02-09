@@ -6,18 +6,12 @@ const CreateAccount = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [confirmedPassword, setConfirmedPassword] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [passwordError, setPasswordError] = useState("");
     const registerAccount = () =>{
         try{
             if (password !== confirmedPassword){
-                const response = fetch(URL, {
-                    method:'post',
-                    body: JSON.stringify({
-                        email: 'NOTVALID',
-                        username: 'NOTVALID',
-                        password: 'NOTVALID',
-                        confirmed: 'FALSE',
-                    })
-                });
+                setPasswordError("Passwords do not match, please recheck your passwords.");
             }
             else {
                 const response = fetch(URL, {
@@ -30,7 +24,12 @@ const CreateAccount = () => {
                     })
                 });
             }
-            
+            if (response.status === 400){
+                setEmailError(response.message);
+            }
+            else{
+                setEmailError("Good shit brother");
+            }
             console.log("RESPONSE: " + response);
         }
         catch (e){
@@ -48,6 +47,7 @@ const CreateAccount = () => {
             id="email" 
             className="form-control"
             onChange={e => setEmail(e.target.value)}/>
+            <label htmlFor="email">{ emailError } </label>
        </div>
 	   <div className="input-group mb-3" style={{width:"33%"}}>
             <input type="text" name="username" 
@@ -71,6 +71,7 @@ const CreateAccount = () => {
             id="confirmedPassword" 
             className="form-control"
             onChange={e => setConfirmedPassword(e.target.value)}/>
+            <label htmlFor="password_confirm"> { passwordError} </label>
 		</div>  
             <div className="d-flex" style={{gap:"15px"}}>
                 <input type="button" 

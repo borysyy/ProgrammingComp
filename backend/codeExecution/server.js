@@ -9,11 +9,8 @@ const docker = new Docker();
 const port = 3001;
 const cors = require('cors');
 const http = require('http');
+const bcrypt = require('bcryptjs');
 const SPCP = require('../database/server.js');
-const spcp = () => {
-    new SPCP();
-}
-
 
 // Serve static files from 'public' and 'output' directories
 app.use(express.static('output'));
@@ -141,12 +138,18 @@ function filterOutputFile(logString, username){
 
 //will be used to put a new user in the database
 app.post("/CreateAccount/register", async (req, res) => {
-	const account = res.body;
-    const jsonObject = JSON.parse(account);
-    const username = jsonObject.username;
-    const password = jsonObject.password;
-    const email = jsonObject.email;
-    spcp.updateUsersTable(username, password, email);
+	const account = req.body;
+    const username = account.username;
+    const password = account.password;
+    const email = account.email;
+    let userExist = SPCP.updateUsersTable(username, password, email);
+    console.log(userExist);
+    //if the user successfully is added to the database, redirect the user home with a 200 status
+    if (userExist === 200){
+        res.redirect(200, '/');
+    }else{
+        res.status(400);
+    }
     console.log(account);
 });
 
