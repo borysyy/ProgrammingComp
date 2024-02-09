@@ -141,15 +141,17 @@ app.post("/CreateAccount/register", async (req, res) => {
 	const account = req.body;
     const username = account.username;
     const password = account.password;
+    const hashedPassword = await bcrypt.hash(password, 13);
     const email = account.email;
-    let userExist = SPCP.updateUsersTable(username, password, email);
+    let userExist = SPCP.updateUsersTable(username, hashedPassword, email);
     console.log(userExist);
     //if the user successfully is added to the database, redirect the user home with a 200 status
     if (userExist === 200){
-        res.redirect(200, '/');
+        console.log("GREAT SUCCESS!");    
     }else{
-        res.status(400);
+        
     }
+    res.status(200).send();
     console.log(account);
 });
 

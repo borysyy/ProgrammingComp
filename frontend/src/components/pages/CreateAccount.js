@@ -22,7 +22,7 @@ const CreateAccount = () => {
                         password: password,
                         confirmed: 'TRUE',
                     })
-                });
+                }).then(respose => console.log(response.status));
             }
             if (response.status === 400){
                 setEmailError(response.message);
@@ -30,10 +30,9 @@ const CreateAccount = () => {
             else{
                 setEmailError("Good shit brother");
             }
-            console.log("RESPONSE: " + response);
         }
         catch (e){
-            console.log("error: ${e}");
+            console.log("error: " + e);
         }
     };
     return (
