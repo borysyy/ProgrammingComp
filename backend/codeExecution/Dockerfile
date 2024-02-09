@@ -23,7 +23,7 @@
 FROM ubuntu:20.04
 
 # Set environment variables to avoid interactive prompts during installation
-ENV DEBIAN_FRONTEND=noninteractive, LC_CTYPE=en_US.UTF-8
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Update and install essential packages
 RUN apt-get update -y && apt-get install -y \
@@ -32,6 +32,7 @@ RUN apt-get update -y && apt-get install -y \
     gdb \     
     g++ 
 
+RUN mkdir /output && chmod 777 /output
 
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 

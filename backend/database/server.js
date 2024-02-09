@@ -1,40 +1,29 @@
-//server variables
-const express = require("express");
-const cors = require("cors");
-const lowDB = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-const bodyParser = require("body-parser");
-const PORT = 3001;
+const sqlite3 = require("sqlite3").verbose();
+const DATABASE = './SUNYPolyCompetitiveProgramming.db'
+let sql;
 
-//initialize the database
-const db = lowDB(new FileSync('database.json'));
+class SPCP{
+	SPCP(){
+		//connect to db
+		const db = new sqlite3.Database(DATABASE, sqlite3.OPEN_READWRITE, (err) =>{
+			if (err){
+				return console.error(err.message);
+			}
+		});
+	}
 
-//set the defaults of the database
-db.defaults({users:[]}).write();
+	//create default table
+	createTables = () => {
+		sql = 'CREATE TABLE users (user_id INTEGER PRIMARY KEY, username VARCHAR(64) NOT NULL, password VARCHAR(64) NOT  NULL,'
+		sql += ' email VARCHAR(255) NOT NULL, teamname DEFAULT NULL);';
+		db.run(sql);
+	}
 
-//set up the express instance
-const app = express();
-app.use(cors);
-app.use(bodyParser.json());
+	//updates table
+	updateUsersTable = (username, password, email) => {
+		sql = 'INSERT INTO users (username, password, email) VALUES ' + username + ', ' + password + ', ' + email + ');'
+		db.run();
+	}
+}
 
-//set up the url handlers
-//will be used to check if the suer is in the database
-app.get('/Login/auth', async (req, res) => {
-	const data = db.get("users").value();
-	return res.json(data);
-});
-
-//will be used to put a new user in the database
-app.post("/CreateAccount/register", async (req, res) => {
-	const account = req.body;
-	db.get("users").push({
-		...account
-	});
-	res.json({success : true});
-});
-
-
-
-app.listen(PORT, () => {
-	console.log("Server is running on port " + PORT);
-});
+module.exports = SPCP;

@@ -2,8 +2,6 @@ const express = require('express');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const lowDB = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
 const path = require('path');
 const app = express();
 const Docker = require('dockerode');
@@ -11,6 +9,11 @@ const docker = new Docker();
 const port = 3001;
 const cors = require('cors');
 const http = require('http');
+const SPCP = require('../database/server.js');
+const spcp = () => {
+    new SPCP();
+}
+
 
 // Serve static files from 'public' and 'output' directories
 app.use(express.static('output'));
@@ -136,35 +139,21 @@ function filterOutputFile(logString, username){
 }
 
 
-//initialize the database
-const db = lowDB(new FileSync('database.json'));
-
-//set the defaults of the database
-db.defaults({users:[]}).write();
-
-//set up the url handlers
-//will be used to check if the suer is in the database
-app.get('/Login/auth', async (req, res) => {
-	const data = db.get("users").value();
-	return res.json(data);
-});
-
 //will be used to put a new user in the database
 app.post("/CreateAccount/register", async (req, res) => {
-	const account = req.body;
+	const account = res.body;
+    const jsonObject = JSON.parse(account);
+    const username = jsonObject.username;
+    const password = jsonObject.password;
+    const email = jsonObject.email;
+    spcp.updateUsersTable(username, password, email);
     console.log(account);
-	db.get("users").push({
-		...account
-	});
-	res.json({success : true});
 });
-
-
-
 
 // Start the Express.js server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
 
 

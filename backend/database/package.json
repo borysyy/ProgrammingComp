@@ -79,6 +79,7 @@
     "set-function-length": "^1.2.1",
     "setprototypeof": "^1.2.0",
     "side-channel": "^1.0.5",
+    "sqlite3": "^5.1.7",
     "statuses": "^2.0.1",
     "steno": "^4.0.2",
     "toidentifier": "^1.0.1",
