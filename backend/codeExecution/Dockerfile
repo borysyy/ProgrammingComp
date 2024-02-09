@@ -10,7 +10,9 @@ RUN apt-get update -y && apt-get install -y \
     cmake \               
     gdb \     
     g++ \
-    python3
+    gcc \
+    python3 
+
 
 
 # Copy the code into the container
