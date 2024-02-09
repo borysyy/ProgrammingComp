@@ -28,5 +28,5 @@ elif [ "$extension" = "py" ]; then
         python3 "$filename" > /output/program_output.txt 2> /output/program_errors.txt
     fi
 else
-    echo "Unsupported file type. Please provide a .cpp or .py file." > /output/program_errors.txt
+    echo "Unsupported file type. Please provide a .cpp, .c, or .py file." > /output/program_errors.txt
 fi
