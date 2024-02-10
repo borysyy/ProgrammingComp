@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CreateAccount = () => {
     const URL = "http://localhost:3001/CreateAccount/register";
@@ -8,13 +9,18 @@ const CreateAccount = () => {
     const [confirmedPassword, setConfirmedPassword] = useState("");
     const [emailError, setEmailError] = useState("");
     const [passwordError, setPasswordError] = useState("");
+    const homeNav = useNavigate();
+	const navToHome = () =>{
+		homeNav("/");
+	}
+
     const registerAccount = () =>{
         try{
             if (password !== confirmedPassword){
                 setPasswordError("Passwords do not match, please recheck your passwords.");
             }
             else {
-                const response = fetch(URL, {
+                fetch(URL, {
                     method:'post',
                     body: JSON.stringify({
                         email: email,
@@ -22,13 +28,14 @@ const CreateAccount = () => {
                         password: password,
                         confirmed: 'TRUE',
                     })
-                }).then(respose => console.log(response.status));
-            }
-            if (response.status === 400){
-                setEmailError(response.message);
-            }
-            else{
-                setEmailError("Good shit brother");
+                }).then(response => {
+                    if (response.status === 200){
+                        navToHome();
+                    } 
+                    else if (response.status === 400){
+                        setEmailError("Email is already in use");
+                    }
+                });
             }
         }
         catch (e){

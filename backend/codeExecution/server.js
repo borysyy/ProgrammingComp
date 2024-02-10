@@ -10,7 +10,7 @@ const port = 3001;
 const cors = require('cors');
 const http = require('http');
 const bcrypt = require('bcryptjs');
-const SPCP = require('../database/server.js');
+const SPCP = require('../database/database.js');
 
 // Serve static files from 'public' and 'output' directories
 app.use(express.static('output'));
@@ -135,7 +135,6 @@ function filterOutputFile(logString, username){
     return filteredOutput
 }
 
-
 //will be used to put a new user in the database
 app.post("/CreateAccount/register", async (req, res) => {
 	const account = req.body;
@@ -144,21 +143,34 @@ app.post("/CreateAccount/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 13);
     const email = account.email;
     let userExist = SPCP.updateUsersTable(username, hashedPassword, email);
-    console.log(userExist);
     //if the user successfully is added to the database, redirect the user home with a 200 status
-    if (userExist === 200){
-        console.log("GREAT SUCCESS!");    
-    }else{
-        
+    return res.sendStatus(userExist);
+});
+
+//will be used to authorize a login
+app.post("/Login/auth", async (req, res) =>{
+    const loginInfo = req.body;
+    const email = loginInfo.email;
+    const password = loginInfo.password;
+    const hashedPassword = SPCP.checkLogin(email);
+    sql = "SELECT password FROM users WHERE email = '" + email + "';"
+    console.log("HASHED: " + JSON.stringify(hashedPassword));
+    const isValid = bcrypt.compare(password, hashedPassword);
+    console.log("PASSWORD:" + password);
+    console.log("EMAIL:" + email);
+    console.log("ISVALID: " + isValid);
+
+    if (isValid){
+        res.status(200);
+        console.log("Password matches");
     }
-    res.status(200).send();
-    console.log(account);
+    else {
+        res.status(401);
+        console.log("Wrong password");
+    }
 });
 
 // Start the Express.js server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-
-

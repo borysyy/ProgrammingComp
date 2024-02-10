@@ -30,4 +30,16 @@ function updateUsersTable(username, password, email){
 	return 200;
 }
 
+//check the username and the password for the database
+function checkLogin(email){
+	let password = "";
+	sql = "SELECT password FROM users WHERE email = '" + email + "';"
+	console.log("SQL STRING: " + sql);
+	password = db.get(sql);
+	password = JSON.stringify(password);
+	console.log(password);
+	return password;
+}
+
 exports.updateUsersTable = updateUsersTable;
+exports.checkLogin = checkLogin;
