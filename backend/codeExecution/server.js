@@ -4,21 +4,14 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const port = 3001;
 const cors = require('cors');
 const http = require('http');
 const bcrypt = require('bcryptjs');
 const SPCP = require('../database/database.js');
 // server.js
-const express = require('express')
-const multer = require('multer')
-const bodyParser = require('body-parser')
-const fs = require('fs')
-const path = require('path')
 const router = express.Router()
 const Docker = require('dockerode')
 const docker = new Docker()
-const cors = require('cors')
 
 // Serve static files from 'public' and 'output' directories
 router.use(express.static('output'))
@@ -117,8 +110,6 @@ router.post('/execute', upload.single('file'), async (req, res) => {
   }
 })
 
-    return filteredOutput
-}
 
 //will be used to put a new user in the database
 app.post("/CreateAccount/register", async (req, res) => {
@@ -155,9 +146,5 @@ app.post("/Login/auth", async (req, res) =>{
     }
 });
 
-// Start the Express.js server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
 
 module.exports = router
