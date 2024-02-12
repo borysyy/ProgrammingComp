@@ -10,7 +10,7 @@ if [ $# -ne 1 ]; then
 fi
 
 filename="$1"
-extension="${filename##*.}"  # Extract file extension
+extension="${filename##*.}"
 
 if [ "$extension" = "cpp" ]; then
     g++ -o user_program "$filename" 2> /output/compiler_output.txt
@@ -27,6 +27,13 @@ elif [ "$extension" = "py" ]; then
     if [ $? -eq 0 ]; then
         python3 "$filename" > /output/program_output.txt 2> /output/program_errors.txt
     fi
+elif [ "$extension" = "java" ]; then
+    javac "$filename" 2> /output/compiler_output.txt
+    if [ $? -eq 0 ]; then
+        java "$filename" > /output/program_output.txt 2> /output/program_errors.txt
+    fi
+elif [ "$extension" = "js" ]; then
+    node "$filename" > /output/program_output.txt 2> /output/program_errors.txt
 else
-    echo "Unsupported file type. Please provide a .cpp, .c, or .py file." > /output/program_errors.txt
+    echo "Unsupported file type. Please provide a .cpp, .c, .py, or a .java file." > /output/program_errors.txt
 fi
