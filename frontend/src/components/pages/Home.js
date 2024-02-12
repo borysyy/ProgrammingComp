@@ -1,43 +1,52 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react'
 
 const Home = () => {
-  const handleFormSubmit = (event) => {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    console.log('Form data:', formData);
+  const [results, setResults] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-    fetchFormData(formData);
-  };
+  const handleFormSubmit = (event) => {
+    event.preventDefault()
+    setIsSubmitting(true)
+    setIsLoading(true) 
+    const formData = new FormData(event.target)
+    console.log('Form data:', formData)
+
+    fetchFormData(formData)
+    // Re-enable the button after 5 seconds
+    setTimeout(() => {
+      setIsSubmitting(false)
+    }, 5000)
+  }
 
   const fetchFormData = (formData) => {
-    fetch('http://localhost:3001/execute', {
+    fetch('http://localhost:3000/server/execute', {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
       .then((data) => {
-        document.getElementById('output').innerText = data.output;
+        console.log('Response data:', data) // Log the response data
+
+        const username = formData.get('username')
+
+        // Update the results state with the new data
+        setResults((prevResults) => ({
+          ...prevResults,
+          [username]: data,
+        }))
+        setIsLoading(false) 
       })
       .catch((error) => {
-        document.getElementById('output').innerText = 'An error occurred: ' + error.message;
-      });
-  };
-
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.innerHTML = 
-      document.getElementById('code-form').addEventListener('submit', function (event) {
-        event.preventDefault();
-        const formData = new FormData(document.getElementById('code-form'));
-        fetchFormData(formData);
-      });
-    ;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+        console.error('An error occurred:', error)
+        setIsLoading(false) 
+      })
+  }
 
   return (
     <div className="container text-center mt-4">
@@ -49,31 +58,67 @@ const Home = () => {
         id="code-form"
         onSubmit={handleFormSubmit}
       >
+        {/* Username input */}
         <div className="mb-3">
           <label htmlFor="username" className="form-label">
             Username:
           </label>
-          <input type="text" name="username" id="username" className="form-control" />
+          <input
+            type="text"
+            name="username"
+            id="username"
+            className="form-control"
+          />
         </div>
+
+        {/* File input */}
         <div className="mb-3">
           <label htmlFor="file" className="form-label">
             File:
           </label>
           <input type="file" name="file" id="file" className="form-control" />
         </div>
-        <button type="submit" className="btn btn-primary">
-          Submit
+
+        {/* Submit button */}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isSubmitting}
+        >
+          {isLoading ? 'Submitting...' : 'Submit'}
         </button>
       </form>
 
+      {/* Code Execution Results */}
       <div className="mt-4">
-        <h2>Code Execution Results</h2>
-        <div style={{ textAlign: 'left', display: 'inline-block', margin: '0 auto' }}>
-          <pre id="output" style={{ whiteSpace: 'pre-wrap' }}></pre>
+        <h2>Code Execution Results:</h2>
+        <div className="container mt-4">
+          {/* Map over the results and create a new div for each user */}
+          {Object.entries(results).map(([username, result]) => (
+            <div key={username}>
+              <h3>{username}</h3>
+              <div className="container">
+                <div className="row">
+                  <div className="col">
+                    <div>Compiler Output:</div>
+                    <div>{result.compilerOutput}</div>
+                  </div>
+                  <div className="col">
+                    <div>Program Output:</div>
+                    <div>{result.programOutput}</div>
+                  </div>
+                  <div className="col">
+                    <div>Program Errors:</div>
+                    <div>{result.programErrors}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

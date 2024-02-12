@@ -1,24 +1,3 @@
-# #Specifies the underlying OS architecture that you are gonna use to build the image.
-# FROM ubuntu:20.04
-# #Variable called USER
-# ARG USER
-# #Runs a command to update and upgrade
-# RUN apt update && apt upgrade -y
-# #Runs a command to install ssh
-# RUN apt install -y openssh-server 
-# #Runs a command to install gcc and g++
-# RUN apt install -y gcc g++
-# #Runs a command to install nano
-# RUN apt install -y nano 
-# #Runs a command to start ssh
-# RUN service ssh start
-# #Makes a problems and submissions directory
-# RUN mkdir /problems /submissions
-# #Executable for the containers
-# CMD useradd -m $USER -s /bin/bash; ((echo 'password'; echo 'password') | passwd $USER); if [ "$DEFAULTPASSWD" = 1 ]; then echo 'Using default password'; else passwd -e $USER; fi; mkdir /home/$USER/.ssh; chown -R $USER:$USER /home/$USER/.ssh; /usr/sbin/sshd -D; 
-# #Tells Docker to get all its information required during the runtime from a specified Port.
-# EXPOSE 22
-
 # Use an official Ubuntu image as a parent image
 FROM ubuntu:20.04
 
@@ -30,9 +9,11 @@ RUN apt-get update -y && apt-get install -y \
     build-essential \     
     cmake \               
     gdb \     
-    g++ 
+    g++ \
+    gcc \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /output && chmod 777 /output
 
 # Copy the C++ code into the container
 COPY submissions/ /submissions/ 
