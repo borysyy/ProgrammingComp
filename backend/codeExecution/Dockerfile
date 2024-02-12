@@ -11,9 +11,8 @@ RUN apt-get update -y && apt-get install -y \
     gdb \     
     g++ \
     gcc \
-    python3 
-
-
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the code into the container
 COPY submissions/ /submissions/ 

@@ -40,45 +40,39 @@ process.chdir(__dirname)
 
 // Handle POST request to '/execute' endpoint
 router.post('/execute', upload.single('file'), async (req, res) => {
-  await fs.promises.writeFile(
-    `${__dirname}/output/compiler_output.txt`,
-    '',
-    'utf8',
-  )
-  await fs.promises.writeFile(
-    `${__dirname}/output/program_output.txt`,
-    '',
-    'utf8',
-  )
-  await fs.promises.writeFile(
-    `${__dirname}/output/program_errors.txt`,
-    '',
-    'utf8',
-  )
+  const username = req.body.username
+  const userDirectory = `submissions/${username}`
+  const outputDirectory = `output/${username}`
 
-  const { code } = req.body
+  // Create user-specific directories
+  fs.mkdirSync(userDirectory, { recursive: true })
+  fs.mkdirSync(outputDirectory, { recursive: true })
 
   if (req.file) {
     const sourceCodeFile = `/submissions/${req.body.username}/${req.file.originalname}`
-    const command = ['/entrypoint.sh', sourceCodeFile]
+    const command = ['/entrypoint.sh', req.body.username, sourceCodeFile]
 
     // Create a Docker container
-    const container = await docker.createContainer({
-      Image: 'code-execute',
-      Cmd: command,
-      AttachStdout: true,
-      AttachStderr: true,
-      Detach: true,
-      HostConfig: {
-        Binds: [
-          `${__dirname}/submissions:/submissions`,
-          `${__dirname}/output:/output`,
-        ],
-      },
-    })
+    const container = await docker
+      .createContainer({
+        Image: 'code-execute',
+        Cmd: command,
+        AttachStdout: true,
+        AttachStderr: true,
+        Detach: true,
+        HostConfig: {
+          Binds: [
+            `${__dirname}/submissions:/submissions`,
+            `${__dirname}/output:/output`,
+          ],
+        },
+      })
+      .catch((err) => console.error('Error creating the container:', err))
 
     // Start the container
-    await container.start()
+    await container
+      .start()
+      .catch((err) => console.error('Error starting the container:', err))
 
     // Stop and remove the container after execution
     const containerData = await container.inspect()
@@ -90,18 +84,17 @@ router.post('/execute', upload.single('file'), async (req, res) => {
     // Read output file and send data as response
     try {
       const compilerOutput = await fs.promises.readFile(
-        `${__dirname}/output/compiler_output.txt`,
+        `${__dirname}/${outputDirectory}/compiler_output.txt`,
         'utf8',
       )
       const programOutput = await fs.promises.readFile(
-        `${__dirname}/output/program_output.txt`,
+        `${__dirname}/${outputDirectory}/program_output.txt`,
         'utf8',
       )
       const programErrors = await fs.promises.readFile(
-        `${__dirname}/output/program_errors.txt`,
+        `${__dirname}/${outputDirectory}/program_errors.txt`,
         'utf8',
       )
-
       res.send({ compilerOutput, programOutput, programErrors })
     } catch (err) {
       console.error('Error reading the file:', err)
@@ -110,5 +103,3 @@ router.post('/execute', upload.single('file'), async (req, res) => {
 })
 
 module.exports = router
-
-

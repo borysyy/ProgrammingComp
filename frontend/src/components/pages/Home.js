@@ -1,12 +1,22 @@
-import React, { useEffect } from 'react'
+import React, { useState } from 'react'
 
 const Home = () => {
+  const [results, setResults] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
   const handleFormSubmit = (event) => {
     event.preventDefault()
+    setIsSubmitting(true)
+    setIsLoading(true) 
     const formData = new FormData(event.target)
     console.log('Form data:', formData)
 
     fetchFormData(formData)
+    // Re-enable the button after 5 seconds
+    setTimeout(() => {
+      setIsSubmitting(false)
+    }, 5000)
   }
 
   const fetchFormData = (formData) => {
@@ -23,31 +33,20 @@ const Home = () => {
       .then((data) => {
         console.log('Response data:', data) // Log the response data
 
-        document.getElementById('compilerOutput').innerText =
-          data.compilerOutput
-        document.getElementById('programOutput').innerText = data.programOutput
-        document.getElementById('programErrors').innerText = data.programErrors
+        const username = formData.get('username')
+
+        // Update the results state with the new data
+        setResults((prevResults) => ({
+          ...prevResults,
+          [username]: data,
+        }))
+        setIsLoading(false) 
       })
       .catch((error) => {
         console.error('An error occurred:', error)
+        setIsLoading(false) 
       })
   }
-
-  // useEffect(() => {
-  //   const script = document.createElement('script')
-  //   script.innerHTML = document
-  //     .getElementById('code-form')
-  //     .addEventListener('submit', function (event) {
-  //       event.preventDefault()
-  //       const formData = new FormData(document.getElementById('code-form'))
-  //       fetchFormData(formData)
-  //     })
-  //   document.body.appendChild(script)
-
-  //   return () => {
-  //     document.body.removeChild(script)
-  //   }
-  // }, [])
 
   return (
     <div className="container text-center mt-4">
@@ -81,8 +80,12 @@ const Home = () => {
         </div>
 
         {/* Submit button */}
-        <button type="submit" className="btn btn-primary">
-          Submit
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isSubmitting}
+        >
+          {isLoading ? 'Submitting...' : 'Submit'}
         </button>
       </form>
 
@@ -90,20 +93,28 @@ const Home = () => {
       <div className="mt-4">
         <h2>Code Execution Results:</h2>
         <div className="container mt-4">
-          <div className="row">
-            <div className="col-md-4">
-              <h3 className="mb-0 text-center">Compiler Output:</h3>
-              <pre id="compilerOutput" style={{ whiteSpace: 'pre-wrap' }}></pre>
+          {/* Map over the results and create a new div for each user */}
+          {Object.entries(results).map(([username, result]) => (
+            <div key={username}>
+              <h3>{username}</h3>
+              <div className="container">
+                <div className="row">
+                  <div className="col">
+                    <div>Compiler Output:</div>
+                    <div>{result.compilerOutput}</div>
+                  </div>
+                  <div className="col">
+                    <div>Program Output:</div>
+                    <div>{result.programOutput}</div>
+                  </div>
+                  <div className="col">
+                    <div>Program Errors:</div>
+                    <div>{result.programErrors}</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="col-md-4">
-              <h3 className="mb-0 text-center">Program Output:</h3>
-              <pre id="programOutput" style={{ whiteSpace: 'pre-wrap' }}></pre>
-            </div>
-            <div className="col-md-4">
-              <h3 className="mb-0 text-center">Program Error:</h3>
-              <pre id="programErrors" style={{ whiteSpace: 'pre-wrap' }}></pre>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
