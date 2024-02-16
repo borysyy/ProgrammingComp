@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-	const URL = "http://localhost:3000/database/server/auth"
+	const URL = "http://localhost:3000/server/Login/auth"
     const createAccountNav = useNavigate();
 	const navToCreateAccount = () =>{
 		createAccountNav("/CreateAccount");
@@ -18,7 +18,7 @@ const Login = () => {
             body: JSON.stringify({
                 email: email,
                 password: password,
-            })
+            }), headers: { "Content-Type": "application/json"},
         }).then((response) => console.log(response.status));
         console.log("Got the response");
     };

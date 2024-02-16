@@ -2,7 +2,8 @@ const path = require('path');
 const express = require('express')
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
-const DATABASE = path.resolve(__dirname, "database.db")
+const { open } = require("sqlite");
+const DATABASE = path.resolve("database/database.db")
 let sql;
 
 
@@ -33,14 +34,17 @@ function updateUsersTable(username, password, email){
 }
 
 //check the username and the password for the database
-function checkLogin(email){
+async function checkLogin(email){
 	let password = "";
 	sql = "SELECT password FROM users WHERE email = '" + email + "';"
 	console.log("SQL STRING: " + sql);
-	password = db.get(sql);
-	password = JSON.stringify(password);
-	console.log(password);
-	return password;
+	password = await db.get(sql, (err, row) =>{
+		console.log(row);
+		return row.password;
+	})
+	console.log("AFTER .GET" + JSON.stringify(password));
+	return {"password" : "password"};
+
 }
 
 

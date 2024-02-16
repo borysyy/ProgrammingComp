@@ -119,21 +119,16 @@ router.post("/CreateAccount/register", async (req, res) => {
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
   const successfulUpdate = SPCP.updateUsersTable(req.body.username, hashedPassword, req.body.email); 
   
-  res.send(successfulUpdate);
+  res.send(successfulUpdate)
 });
 
 //will be used to authorize a login
 router.post("/Login/auth", async (req, res) =>{
-    const loginInfo = req.body;
-    const email = loginInfo.email;
-    const password = loginInfo.password;
+    const email = req.body.email;
+    const password = req.body.password;
     const hashedPassword = SPCP.checkLogin(email);
-    sql = "SELECT password FROM users WHERE email = '" + email + "';"
     console.log("HASHED: " + JSON.stringify(hashedPassword));
-    const isValid = bcrypt.compare(password, hashedPassword);
-    console.log("PASSWORD:" + password);
-    console.log("EMAIL:" + email);
-    console.log("ISVALID: " + isValid);
+    const isValid = bcrypt.compare(password, "check");
 
     if (isValid){
         res.status(200);
