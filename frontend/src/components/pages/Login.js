@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-	const URL = "http://localhost:3001/Login/auth"
+	const URL = "http://localhost:3000/database/server/auth"
     const createAccountNav = useNavigate();
 	const navToCreateAccount = () =>{
 		createAccountNav("/CreateAccount");

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CreateAccount = () => {
-    const URL = "http://localhost:3001/CreateAccount/register";
+    const URL = "http://localhost:3000/server/CreateAccount/register";
     const [email, setEmail] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
@@ -20,13 +20,18 @@ const CreateAccount = () => {
                 setPasswordError("Passwords do not match, please recheck your passwords.");
             }
             else {
+
+                
+                console.log("USERNAME: " + username);
+                console.log("PASSWORD: " + password);
+                console.log("EMAIL: " + email);
+
                 fetch(URL, {
                     method:'post',
-                    body: JSON.stringify({
+                    body:({
                         email: email,
                         username: username,
                         password: password,
-                        confirmed: 'TRUE',
                     })
                 }).then(response => {
                     if (response.status === 200){
@@ -44,7 +49,7 @@ const CreateAccount = () => {
     };
     return (
     <div className="container text-center">
-        <h1> Login </h1>
+        <h1> Create Account </h1>
         <form className="d-flex flex-column justify-contents-center align-items-center">
        <div className="input-group mb-3" style={{width:"33%"}}>
             <input type="email" 

@@ -8,6 +8,7 @@ const cors = require('cors');
 const http = require('http');
 const bcrypt = require('bcryptjs');
 const SPCP = require('../database/database.js');
+
 // server.js
 const router = express.Router()
 const Docker = require('dockerode')
@@ -112,19 +113,31 @@ router.post('/execute', upload.single('file'), async (req, res) => {
 
 
 //will be used to put a new user in the database
-app.post("/CreateAccount/register", async (req, res) => {
-	const account = req.body;
-    const username = account.username;
-    const password = account.password;
-    const hashedPassword = await bcrypt.hash(password, 13);
-    const email = account.email;
-    let userExist = SPCP.updateUsersTable(username, hashedPassword, email);
-    //if the user successfully is added to the database, redirect the user home with a 200 status
-    return res.sendStatus(userExist);
+router.post("/CreateAccount/register", async (req, res) => {
+  console.log(JSON.stringify(req.body));
+
+  const username = req.body.username;
+  const password = req.body.password;
+  let tempPassword = "";
+  bcrypt.genSalt(10, (err, salt) => {   
+    bcrypt.hash(password, salt, (err, hashedPassword)=>{ 
+      console.log("HASHED PASSWORD: " + hashedPassword);
+    });
+  })
+  const email = req.body.email;
+
+  console.log("USERNAME: " + username);
+  console.log("PASSWORD: " + password);
+  console.log("TEMP PASSWORD: " + tempPassword);
+  console.log("EMAIL: " + email);
+
+  let userExist = SPCP.updateUsersTable(username, tempPassword, email);
+  //if the user successfully is added to the database, redirect the user home with a 200 status
+  return res.sendStatus(userExist);
 });
 
 //will be used to authorize a login
-app.post("/Login/auth", async (req, res) =>{
+router.post("/Login/auth", async (req, res) =>{
     const loginInfo = req.body;
     const email = loginInfo.email;
     const password = loginInfo.password;

@@ -1,4 +1,6 @@
 const path = require('path');
+const express = require('express')
+const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const DATABASE = path.resolve(__dirname, "database.db")
 let sql;
@@ -41,5 +43,9 @@ function checkLogin(email){
 	return password;
 }
 
-exports.updateUsersTable = updateUsersTable;
-exports.checkLogin = checkLogin;
+
+module.exports = {
+	router,
+	updateUsersTable,
+	checkLogin,
+}
