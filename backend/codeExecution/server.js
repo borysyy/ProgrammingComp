@@ -43,6 +43,7 @@ const upload = multer({ storage: storage })
 
 // Parse incoming JSON data
 router.use(express.json())
+router.use(bodyParser.json())
 
 // Set the working directory within the Node.js server
 process.chdir(__dirname)
@@ -115,25 +116,10 @@ router.post('/execute', upload.single('file'), async (req, res) => {
 //will be used to put a new user in the database
 router.post("/CreateAccount/register", async (req, res) => {
   console.log(JSON.stringify(req.body));
-
-  const username = req.body.username;
-  const password = req.body.password;
-  let tempPassword = "";
-  bcrypt.genSalt(10, (err, salt) => {   
-    bcrypt.hash(password, salt, (err, hashedPassword)=>{ 
-      console.log("HASHED PASSWORD: " + hashedPassword);
-    });
-  })
-  const email = req.body.email;
-
-  console.log("USERNAME: " + username);
-  console.log("PASSWORD: " + password);
-  console.log("TEMP PASSWORD: " + tempPassword);
-  console.log("EMAIL: " + email);
-
-  let userExist = SPCP.updateUsersTable(username, tempPassword, email);
-  //if the user successfully is added to the database, redirect the user home with a 200 status
-  return res.sendStatus(userExist);
+  const hashedPassword = await bcrypt.hash(req.body.password, 10);
+  const successfulUpdate = SPCP.updateUsersTable(req.body.username, hashedPassword, req.body.email); 
+  
+  res.send(successfulUpdate);
 });
 
 //will be used to authorize a login

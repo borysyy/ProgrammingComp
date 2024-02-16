@@ -21,18 +21,14 @@ const CreateAccount = () => {
             }
             else {
 
-                
-                console.log("USERNAME: " + username);
-                console.log("PASSWORD: " + password);
-                console.log("EMAIL: " + email);
-
                 fetch(URL, {
                     method:'post',
-                    body:({
+                    body:JSON.stringify({
                         email: email,
                         username: username,
-                        password: password,
-                    })
+                        password: password
+                    }),
+                     headers: { "Content-Type": "application/json"},
                 }).then(response => {
                     if (response.status === 200){
                         navToHome();
