@@ -128,14 +128,15 @@ router.post("/Login/auth", async (req, res) =>{
     const password = req.body.password;
     const hashedPassword = await SPCP.checkLogin(email);
     console.log("HASHED: " + JSON.stringify(hashedPassword));
-    const isValid = bcrypt.compare(password, "check");
+    const isValid = await bcrypt.compare(password, hashedPassword);
 
+    console.log("IS VALID: " + JSON.stringify(isValid));
     if (isValid){
-        res.status(200);
+        res.sendStatus(200);
         console.log("Password matches");
     }
     else {
-        res.status(401);
+        res.sendStatus(401);
         console.log("Wrong password");
     }
 });

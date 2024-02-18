@@ -12,26 +12,32 @@ const Login = () => {
     const [errorMsg, setErrorMsg] = useState("");
 
     const verify = () =>{
-        console.log("VERIFYING");
         fetch(URL, {
             method:'post',
             body: JSON.stringify({
                 email: email,
                 password: password,
             }), headers: { "Content-Type": "application/json"},
-        }).then((response) => console.log(response.status));
-        console.log("Got the response");
+        }).then((response) => {
+            console.log("STATUS " + response.status)
+            if (response.status === 200){
+                setErrorMsg("Log In Successful");
+            }
+            else if (response.status === 401){
+                setErrorMsg("Incorrect Email or Password");
+            }
+        });
     };
 
 return (
     <div className="container text-center">
         <h1> Login </h1>
+        <div> {errorMsg} </div>
         <form className="d-flex flex-column justify-contents-center align-items-center">
-        <label htmlFor='email' value={errorMsg}/>
         <div className="input-group mb-3" style={{width:"33%"}}>
             <input type="text" 
             name="email" 
-            placeholder="email" 
+            placeholder="Email" 
             className="form-control"
             onChange={e => setEmail(e.target.value)}/>
         </div>
