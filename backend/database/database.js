@@ -33,18 +33,17 @@ function updateUsersTable(username, password, email){
 	return 200;
 }
 
-//check the username and the password for the database
-async function checkLogin(email){
-	let password = "";
-	sql = "SELECT password FROM users WHERE email = '" + email + "';"
-	console.log("SQL STRING: " + sql);
-	password = await db.get(sql, (err, row) =>{
-		console.log(row);
-		return row.password;
-	})
-	console.log("AFTER .GET" + JSON.stringify(password));
-	return {"password" : "password"};
-
+function checkLogin(email) {
+  return new Promise((resolve, reject) => {          
+    let sql = "SELECT password FROM users WHERE email = '" + email + "';";    
+    return db.get(sql, (err, res) => { 
+      if (err) {
+        console.error("DB Error: Could not find email: ", err.message);
+        return reject(err.message);
+      }
+      return resolve(res.password);
+    });
+  });
 }
 
 

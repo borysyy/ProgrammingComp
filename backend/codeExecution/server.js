@@ -126,7 +126,7 @@ router.post("/CreateAccount/register", async (req, res) => {
 router.post("/Login/auth", async (req, res) =>{
     const email = req.body.email;
     const password = req.body.password;
-    const hashedPassword = SPCP.checkLogin(email);
+    const hashedPassword = await SPCP.checkLogin(email);
     console.log("HASHED: " + JSON.stringify(hashedPassword));
     const isValid = bcrypt.compare(password, "check");
 
