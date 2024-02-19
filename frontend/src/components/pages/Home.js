@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const Home = () => {
+const Home = ({ user }) => {
   const [results, setResults] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -50,6 +50,7 @@ const Home = () => {
 
   return (
     <div className="container text-center mt-4">
+     <h2>Hello {user.email} </h2>
       <h1>Upload and Execute Code</h1>
       <form
         action="/execute"

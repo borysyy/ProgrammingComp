@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ onLogin }) => {
 	const URL = "http://localhost:3000/server/Login/auth"
-    const createAccountNav = useNavigate();
+    const nav = useNavigate();
 	const navToCreateAccount = () =>{
-		createAccountNav("/CreateAccount");
+		nav("/CreateAccount");
 	}
+    const navToHome = () => {
+        nav("/");
+    }
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
@@ -20,8 +23,9 @@ const Login = () => {
             }), headers: { "Content-Type": "application/json"},
         }).then((response) => {
             console.log("STATUS " + response.status)
-            if (response.status === 200){
-                setErrorMsg("Log In Successful");
+            if (response.status === 200){ 
+                onLogin({email});
+                navToHome();
             }
             else if (response.status === 401){
                 setErrorMsg("Incorrect Email or Password");
