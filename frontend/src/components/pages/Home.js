@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 
+// useState - Storing variables that are part of your application's state and will change as the user interacts with your website.
+// UseEffect - Perform side effects when certain changes occur in state
+
 const Home = () => {
   const [results, setResults] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -8,7 +11,7 @@ const Home = () => {
   const handleFormSubmit = (event) => {
     event.preventDefault()
     setIsSubmitting(true)
-    setIsLoading(true) 
+    setIsLoading(true)
     const formData = new FormData(event.target)
     console.log('Form data:', formData)
 
@@ -40,11 +43,11 @@ const Home = () => {
           ...prevResults,
           [username]: data,
         }))
-        setIsLoading(false) 
+        setIsLoading(false)
       })
       .catch((error) => {
         console.error('An error occurred:', error)
-        setIsLoading(false) 
+        setIsLoading(false)
       })
   }
 
@@ -110,6 +113,10 @@ const Home = () => {
                   <div className="col">
                     <div>Program Errors:</div>
                     <div>{result.programErrors}</div>
+                  </div>
+                  <div className="col">
+                    <div>Compile/Runtime Status:</div>
+                    <div>{result.compileStatus}</div>
                   </div>
                 </div>
               </div>
