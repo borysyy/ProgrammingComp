@@ -3,7 +3,8 @@ import React, { useState } from 'react'
 const Home = ({ user }) => {
   const [results, setResults] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)	
+  const isLoggedIn = user.email != undefined ? true : false;
 
   const handleFormSubmit = (event) => {
     event.preventDefault()
@@ -50,7 +51,7 @@ const Home = ({ user }) => {
 
   return (
     <div className="container text-center mt-4">
-     <h2>Hello {user.email} </h2>
+     <h2>{isLoggedIn ? "Hello " + user.email : "Welcome, please sign in"} </h2>
       <h1>Upload and Execute Code</h1>
       <form
         action="/execute"
