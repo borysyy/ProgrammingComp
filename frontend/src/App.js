@@ -17,7 +17,7 @@ const App = () => {
     <CookiesProvider>
     <Router>
       <div>
-        <Header />
+        <Header user={cookie.user ? cookie.user : "Guest"}/>
         <Routes>
           <Route path="/" element={<Home user={cookie.user ? cookie.user : "Guest"}/>} />
           <Route path="/Login" element={<Login onLogin={onLogin}/>} />
