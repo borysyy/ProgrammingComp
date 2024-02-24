@@ -77,7 +77,8 @@ const Home = () => {
           <label htmlFor="file" className="form-label">
             File:
           </label>
-          <input type="file" name="file" id="file" className="form-control" />
+          {/* <input type="file" name="file" id="file" className="form-control" /> */}
+          <input type="file" name="files" id="file" className="form-control" multiple />
         </div>
 
         {/* Submit button */}

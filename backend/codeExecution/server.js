@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 })
 
 // Set up multer middleware for file uploads
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage }).array('files', 10); // 'files' is the name attribute in your HTML file
 
 // Parse incoming JSON data
 router.use(express.json())
@@ -39,7 +39,7 @@ router.use(express.json())
 process.chdir(__dirname)
 
 // Handle POST request to '/execute' endpoint
-router.post('/execute', upload.single('file'), async (req, res) => {
+router.post('/execute', upload, async (req, res) => {
   await fs.promises.writeFile(
     `${__dirname}/output/compiler_output.txt`,
     '',
@@ -58,9 +58,9 @@ router.post('/execute', upload.single('file'), async (req, res) => {
 
   const { code } = req.body
 
-  if (req.file) {
-    const sourceCodeFile = `/submissions/${req.body.username}/${req.file.originalname}`
-    const command = ['/entrypoint.sh', sourceCodeFile]
+  if (req.files && req.files.length > 0) {
+    const sourceCodeFiles = req.files.map((file) => `/submissions/${req.body.username}/${file.originalname}`);
+    const command = ['/entrypoint.sh', ...sourceCodeFiles]
 
     // Create a Docker container
     const container = await docker.createContainer({
