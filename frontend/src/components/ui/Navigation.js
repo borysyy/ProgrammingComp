@@ -17,6 +17,7 @@ function Navigation({logInStatus}) {
             <Nav.Link as={Link} to="/">
               Home
             </Nav.Link>
+			{logInStatus ? <Nav.Link as={Link} to="/RegisterTeam"> Register Team </Nav.Link> : null}
             <Nav.Link as={Link} to={"/" + logInOrOut}>
               { logInOrOut }
             </Nav.Link>
