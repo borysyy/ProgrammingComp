@@ -3,7 +3,6 @@ const express = require('express')
 const multer = require('multer')
 const bodyParser = require('body-parser')
 const fs = require('fs')
-const path = require('path')
 const router = express.Router()
 const Docker = require('dockerode')
 const docker = new Docker()
@@ -11,7 +10,6 @@ const cors = require('cors')
 const Queue = require('bull')
 const codeQueue = new Queue('code-queue')
 const WebSocket = require('ws')
-
 
 router.use(cors())
 
@@ -54,27 +52,23 @@ router.post('/execute', upload.single('file'), async (req, res) => {
     const command = ['/entrypoint.sh', req.body.username, sourceCodeFile]
 
     // Add a job to the queue
-    codeQueue
-      .add({
-        username: username,
-        command: command,
-        userDirectory: userDirectory,
-        outputDirectory: outputDirectory,
-      })
-      .then(() => console.log('Job added to the queue'))
-
-    // Send a response to the client
-    res.send({
-      status: 'Your code has been submitted and will be executed shortly.',
+    codeQueue.add({
+      username: username,
+      command: command,
+      userDirectory: userDirectory,
+      outputDirectory: outputDirectory,
     })
+    codeQueue.on('completed', (result) =>
+      res.send({ username, ...result.returnvalue }),
+    )
   }
 })
 
 // Process the jobs
-codeQueue.process(async (job) => {
+codeQueue.process(async (job, done) => {
   console.log('Processing job:', job.id)
 
-  const { username, command, userDirectory, outputDirectory } = job.data
+  const { username, command, outputDirectory } = job.data
 
   // Create a Docker container
   const container = await docker
@@ -109,43 +103,18 @@ codeQueue.process(async (job) => {
 
   // Read output file and send data as response
   try {
-    const compilerOutput = await fs.promises.readFile(
-      `${__dirname}/${outputDirectory}/compiler_output.txt`,
-      'utf8',
-    )
-    const programOutput = await fs.promises.readFile(
-      `${__dirname}/${outputDirectory}/program_output.txt`,
-      'utf8',
-    )
-    const programErrors = await fs.promises.readFile(
-      `${__dirname}/${outputDirectory}/program_errors.txt`,
-      'utf8',
-    )
-    const compileStatus = await fs.promises.readFile(
-      `${__dirname}/${outputDirectory}/status.txt`,
-      'utf8',
+    const compilerOutput = fs.readFileSync(
+      `${__dirname}/${outputDirectory}/${username}_compiler_output.txt`,
+      'utf-8',
     )
 
-    res.send({ compilerOutput, programOutput, programErrors, compileStatus })
+    const programOutput = fs.readFileSync(
+      `${__dirname}/${outputDirectory}/${username}_program_output.txt`,
+      'utf-8',
+    )
+    done(null, { compilerOutput, programOutput })
   } catch (err) {
     console.error('Error reading the file:', err)
-  }
-})
-
-// Handle GET request to fetch compile status
-router.get('/compile-status', (req, res) => {
-  const username = req.query.username
-  const outputDirectory = `output/${username}`
-
-  try {
-    const compileStatus = fs.readFileSync(
-      path.join(__dirname, outputDirectory, 'status.txt'),
-      'utf8',
-    )
-    res.send({ compileStatus })
-  } catch (err) {
-    console.error('Error reading the file:', err)
-    res.status(500).send('Internal Server Error')
   }
 })
 

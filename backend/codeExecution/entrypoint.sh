@@ -9,36 +9,76 @@ username="$1"
 filename="$2"
 extension="${filename##*.}"  # Extract file extension
 
+export TZ=America/New_York
+timestamp=$(date +%T) # Set timezone to EST
+
+
 # Create a unique output directory for each user
 output_directory="/output/${username}"
-
-# Clear the program output file at the start of each run
-> "${output_directory}/compiler_output.txt"
-> "${output_directory}/program_errors.txt"
-> "${output_directory}/program_output.txt"
 
 # Set default status to success
 status="Success"
 
+
+program_output="${output_directory}/${username}_program_output.txt"
+compiler_output="${output_directory}/${username}_compiler_output.txt"
+
+echo $'\n' > $program_output
+echo $'\n' > $compiler_output
+
+
+
 if [ "$extension" = "cpp" ]; then
-    # Use timeout to limit compilation time to 5 seconds
-    timeout 5s g++ -o user_program "$filename" 2> "${output_directory}/compiler_output.txt" || status="Compilation took longer than 5 seconds"
-    if [ "$status" == "Success" ]; then
-        # Use timeout to limit execution time to 10 seconds
-        timeout 10s ./user_program > "${output_directory}/program_output.txt" 2> "${output_directory}/program_errors.txt" || status="Runtime took longer than 10 seconds"
-    fi
+    # Compile the program, with a 10 second limit, capturing compiler errors
+    timeout 10s g++ -o user_program "$filename" 2> $compiler_output || { 
+        if [ -s $compiler_output ]; then
+            status="An error as occurred"
+        else
+            status="Compilation took longer than 10 seconds"
+        fi
+    }    
+    # Run the program, with a 10 second limit, capturing stdout and stderr
+    timeout 10s ./user_program &> $program_output   || { 
+        if [ -s $program_output ]; then
+            status="An error as occurred"
+        else
+            status="Runtime took longer than 10 seconds"
+        fi
+     }
+    
 elif [ "$extension" = "c" ]; then
-    timeout 5s gcc -o user_program "$filename" 2> "${output_directory}/compiler_output.txt" || status="Compilation took longer than 5 seconds"
-    if [ "$status" == "Success" ]; then
-        timeout 10s ./user_program > "${output_directory}/program_output.txt" 2> "${output_directory}/program_errors.txt" || status="Runtime took longer than 10 seconds"
-    fi
+    # Compile the program, with a 10 second limit, capturing compiler errors
+    timeout 10s gcc -o user_program "$filename" 2> $compiler_output || { 
+        if [ -s $compiler_output ]; then
+            status="An error as occurred"
+        else
+            status="Compilation took longer than 10 seconds"
+        fi
+    }    
+    # Run the program, with a 10 second limit, capturing stdout and stdin
+    timeout 10s ./user_program &> $program_output   || { 
+        if [ -s $program_output ]; then
+            status="An error as occurred"
+        else
+            status="Runtime took longer than 10 seconds"
+        fi
+     }
+    
 elif [ "$extension" = "py" ]; then
-    # Use timeout to limit execution time to 10 seconds
-    timeout 10s python3 "$filename" > "${output_directory}/program_output.txt" 2> "${output_directory}/program_errors.txt" || status="Runtime took longer than 10 seconds"
+    # Run the program, with a 10 second limit, capturing stdout and stdin
+    timeout 10s python3 "$filename" &> $program_output  || { 
+        if [ -s $program_output ]; then
+            status="An error as occurred"
+        else
+            status="Runtime took longer than 10 seconds"
+        fi
+    }
+
 else
-    echo "Unsupported file type. Please provide a .cpp, .c, or .py file." > "${output_directory}/program_errors.txt"
-    status="Unsupported file type"
+    status="Unsupported file type: Please provide a .cpp, .c, or .py file." 
+    
 fi
 
-# Write status to status file
-echo "$status" > "${output_directory}/status.txt"
+
+# Write status to program_output file
+sed -i "1s/^/${status//\//\\/}\n\n/" "$program_output"
