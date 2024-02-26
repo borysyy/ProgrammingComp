@@ -127,10 +127,8 @@ router.post("/Login/auth", async (req, res) =>{
     const email = req.body.email;
     const password = req.body.password;
     const hashedPassword = await SPCP.checkLogin(email);
-    console.log("HASHED: " + JSON.stringify(hashedPassword));
     const isValid = await bcrypt.compare(password, hashedPassword);
 
-    console.log("IS VALID: " + JSON.stringify(isValid));
     if (isValid){
         res.sendStatus(200);
         console.log("Password matches");
@@ -141,5 +139,14 @@ router.post("/Login/auth", async (req, res) =>{
     }
 });
 
+//put team in the database
+router.post("/RegisterTeam/register", async (req, res) => {
+	console.log(JSON.stringify(req.body));
+	const teamName = req.body.teamName;
+	const allEmails = req.body.teamMember;
+	const cntEmails = Object.keys(allEmails).length;
+	const dbStatus = SPCP.updateTeamTable(teamName, allEmails, cntEmails);
+	res.send (dbStatus);
+});
 
 module.exports = router

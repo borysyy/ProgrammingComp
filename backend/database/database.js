@@ -46,9 +46,28 @@ function checkLogin(email) {
   });
 }
 
+function updateTeamTable(teamName, allEmails, cntEmails){
+	let sql = "";
+	try{
+		sql = "INSERT INTO teams (teamName) VALUES ('" + teamName + "');";
+		db.run(sql);
+		for (let i = 0; i < cntEmails; ++i){	
+			console.log(allEmails[i].email);		
+			sql = "UPDATE users SET teamname = '" + teamName + "' WHERE email = '" + allEmails[i].email + "';";  
+			db.run(sql);
+		}
+	}
+	catch(e){
+		console.log("***ERROR " + e);
+		return (400);
+	}
+	return 200;
+}
+
 
 module.exports = {
 	router,
 	updateUsersTable,
 	checkLogin,
+	updateTeamTable,
 }

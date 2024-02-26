@@ -2,12 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const RegisterTeam = () => {
+const URL = "http://localhost:3000/server/RegisterTeam/register"
+const nav = useNavigate();
+const navToHome = () => {
+    nav("/");
+}
 
 const [teamMember, setTeamMember] = useState([
 	{ email:""} 
 ]);
 
 const [teamName, setTeamName] = useState("");
+const [errorMsg, setErrorMsg] = useState("");
+
 const handleFormChange = (index, event) => {
 	let data = [...teamMember];
 	data[index][event.target.name] = event.target.value;
@@ -20,19 +27,35 @@ const addFields = () => {
 
 const removeFields = (index) => {
 	let data = [...teamMember];
-	data.splice(index, 1);
+	data.splice(-1);
 	setTeamMember(data);
 }
 
 const submit = (e) => {
 	e.preventDefault();
-	console.log(teamName);
-	console.log(teamMember);
+	fetch(URL, {
+            method:'post',
+            body: JSON.stringify({
+				teamName:teamName, 
+				teamMember:teamMember,
+            }), headers: { "Content-Type": "application/json"},
+        }).then((response) => {
+            console.log("STATUS " + response.status)
+            if (response.status === 200){ 
+                navToHome();
+            }
+            else if (response.status === 401){
+                setErrorMsg("Unable to register team");
+            }
+        });
 }
 
 return (
     <div className="container text-center">
         <h1> Register Team </h1>
+		<div>
+		{errorMsg}
+		</div>
 			<form className="d-flex flex-column justify-contents-center align-items-center">	
 				<input className="form-control mb-3" 
 				name="teamName"
@@ -41,7 +64,6 @@ return (
 				onChange={e => setTeamName(e.target.value)}
 				style={{width:"250px"}}/>
 				
-
 				{teamMember.map((input, index) => {
 				return(
 					<div key={index}>
