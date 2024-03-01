@@ -3,15 +3,27 @@ const express = require('express')
 const multer = require('multer')
 const bodyParser = require('body-parser')
 const fs = require('fs')
-const router = express.Router()
-const Docker = require('dockerode')
-const docker = new Docker()
+const path = require('path')
+const http = require('http')
+const app = express()
+const bcrypt = require('bcryptjs')
+const SPCP = require('../database/database.js')
 const cors = require('cors')
 const Queue = require('bull')
 const codeQueue = new Queue('code-queue')
 const WebSocket = require('ws')
 
+const router = express.Router()
+const Docker = require('dockerode')
+const docker = new Docker()
+
 router.use(cors())
+
+app.use(
+  express.json({
+    type: ['application/json', 'text/plain'],
+  }),
+)
 
 // Parse URL-encoded form data
 router.use(bodyParser.urlencoded({ extended: true }))
@@ -116,6 +128,45 @@ codeQueue.process(async (job, done) => {
   } catch (err) {
     console.error('Error reading the file:', err)
   }
+})
+
+//will be used to put a new user in the database
+router.post('/CreateAccount/register', async (req, res) => {
+  console.log(JSON.stringify(req.body))
+  const hashedPassword = await bcrypt.hash(req.body.password, 10)
+  const successfulUpdate = SPCP.updateUsersTable(
+    req.body.username,
+    hashedPassword,
+    req.body.email,
+  )
+
+  res.sendStatus(successfulUpdate)
+})
+
+//will be used to authorize a login
+router.post('/Login/auth', async (req, res) => {
+  const email = req.body.email
+  const password = req.body.password
+  const hashedPassword = await SPCP.checkLogin(email)
+  const isValid = await bcrypt.compare(password, hashedPassword)
+
+  if (isValid) {
+    res.sendStatus(200)
+    console.log('Password matches')
+  } else {
+    res.sendStatus(401)
+    console.log('Wrong password')
+  }
+})
+
+//put team in the database
+router.post('/RegisterTeam/register', async (req, res) => {
+  console.log(JSON.stringify(req.body))
+  const teamName = req.body.teamName
+  const allEmails = req.body.teamMember
+  const cntEmails = Object.keys(allEmails).length
+  const dbStatus = SPCP.updateTeamTable(teamName, allEmails, cntEmails)
+  res.send(dbStatus)
 })
 
 module.exports = router

@@ -4,7 +4,9 @@ import Container from 'react-bootstrap/Container'
 import Nav from 'react-bootstrap/Nav'
 import Navbar from 'react-bootstrap/Navbar'
 
-function Navigation() {
+function Navigation({ logInStatus }) {
+  const logInOrOut = logInStatus ? 'Logout' : 'Login'
+
   return (
     <Navbar expand="lg" className="bg-primary">
       <Container>
@@ -14,6 +16,15 @@ function Navigation() {
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/">
               Home
+            </Nav.Link>
+            {logInStatus ? (
+              <Nav.Link as={Link} to="/RegisterTeam">
+                {' '}
+                Register Team{' '}
+              </Nav.Link>
+            ) : null}
+            <Nav.Link as={Link} to={'/' + logInOrOut}>
+              {logInOrOut}
             </Nav.Link>
           </Nav>
         </Navbar.Collapse>
