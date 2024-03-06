@@ -1,0 +1,81 @@
+
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+
+   
+    <title>Login</title>
+
+    <link href="./css/styles.css" rel="stylesheet">
+  </head>
+  <body  data-bs-theme="dark">
+
+    <div class="bg-primary">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-4">
+            <h1 class="display-4">
+              SUNY Poly Programming Comp 
+            </h1>
+          
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div class="d-flex align-items-center py-4">
+
+  <div class="container text-center">
+    <h1> Login </h1>
+    <form class="d-flex flex-column justify-contents-center align-items-center" action="/login" method="post">
+      <div class="input-group mb-3" style=" width: 33% ">
+        <input
+        type="text"
+        name="email"
+        placeholder="Email"
+        class="form-control"
+        />
+      </div>
+      <div class="input-group mb-3" style=" width: 33%">
+        <input
+        type="password"
+        name="password"
+        placeholder="Password"
+        class="form-control"
+        />
+      </div>
+      <div class="d-flex" style=" gap: 15px ">
+        <a
+        href="/register"
+        class="btn btn-primary"
+        > Create Account </a>
+        <button
+        class="btn btn-success"
+        >Login</button>
+      </div>
+      <div class="container w-25 mt-5">
+        <div class="mx-auto text-center">
+            <% for (const message of errorMessages) { %>
+              <div class="alert alert-danger " role="alert">
+                <%= message %>
+              </div>
+            <% } %>
+            <% for (const message of messages) { %>
+              <div class="alert  alert-success" role="alert">
+                <%= message %>
+              </div>
+            <% } %>
+            <% for (const message of successMessages) { %>
+              <div class="alert  alert-success" role="alert">
+                <%= message %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+  
+    </body>
+</html>

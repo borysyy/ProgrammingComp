@@ -9,7 +9,9 @@ const Header = ({ user }) => {
       <div className="container-fluid">
         <div className="row">
           <div className="col-4">
-            <h1 className="display-4">SUNY Poly Programming Comp</h1>
+            <h1 className="display-4">
+              SUNY Poly Programming Comp {user.username}
+            </h1>
             <div>
               <Navigation logInStatus={isLoggedIn} />
             </div>

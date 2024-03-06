@@ -19,13 +19,12 @@ function Navigation({ logInStatus }) {
             </Nav.Link>
             {logInStatus ? (
               <Nav.Link as={Link} to="/RegisterTeam">
-                {' '}
-                Register Team{' '}
+                Register Team
               </Nav.Link>
             ) : null}
-            <Nav.Link as={Link} to={'/' + logInOrOut}>
+            <a href={`/${logInOrOut}`} className="btn btn-primary">
               {logInOrOut}
-            </Nav.Link>
+            </a>
           </Nav>
         </Navbar.Collapse>
       </Container>

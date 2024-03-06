@@ -20,7 +20,7 @@ const Submissions = () => {
   }
 
   const fetchFormData = (formData) => {
-    fetch('http://localhost:3000/server/execute', {
+    fetch('http://localhost:3000/index/execute', {
       method: 'POST',
       body: formData,
     })

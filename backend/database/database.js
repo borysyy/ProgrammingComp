@@ -1,8 +1,8 @@
 const path = require('path')
 const express = require('express')
+const { error } = require('console')
 const router = express.Router()
 const sqlite3 = require('sqlite3').verbose()
-const { open } = require('sqlite')
 const DATABASE = path.resolve('./database/database.db')
 let sql
 
@@ -16,36 +16,41 @@ const db = new sqlite3.Database(DATABASE, sqlite3.OPEN_READWRITE, (err) => {
 })
 
 //updates table
-function updateUsersTable(username, password, email) {
-  try {
-    sql =
-      "INSERT INTO users (username, password, email, teamname) VALUES ('" +
-      username +
-      "', '" +
-      password +
-      "', '" +
-      email +
-      "', null);"
-    db.run(sql)
-  } catch (e) {
-    if (e == SQLITE_CONSTRAINT) {
-      return 400
-    }
-    console.log('***ERROR: ' + e)
-    return 400
-  }
-  return 200
+function createUser(username, password, email) {
+  return new Promise((resolve, reject) => {
+    // Check if email is already in use
+    const checkSql = 'SELECT COUNT(*) AS count FROM users WHERE email = ?'
+    db.get(checkSql, [email], (error, row) => {
+      if (error) {
+        reject(error) // Reject if there's an error in the database query
+      } else {
+        if (row.count > 0) {
+          resolve({ success: false, reason: 'Email already in use' })
+        } else {
+          // Proceed with the insertion
+          const insertSql =
+            'INSERT INTO users (username, password, email, teamname) VALUES (?, ?, ?, null);'
+          db.run(insertSql, [username, password, email], (error) => {
+            if (error) {
+              reject(error) // Reject if there's an error during insertion
+            } else {
+              resolve({ success: true })
+            }
+          })
+        }
+      }
+    })
+  })
 }
 
-function checkLogin(email) {
+function getUser(email) {
   return new Promise((resolve, reject) => {
-    let sql = "SELECT password FROM users WHERE email = '" + email + "';"
-    return db.get(sql, (err, res) => {
+    let sql = "SELECT * FROM users WHERE email = '" + email + "';"
+    return db.get(sql, (err, user) => {
       if (err) {
-        console.error('DB Error: Could not find email: ', err.message)
         return reject(err.message)
       }
-      return resolve(res.password)
+      return resolve(user)
     })
   })
 }
@@ -74,7 +79,7 @@ function updateTeamTable(teamName, allEmails, cntEmails) {
 
 module.exports = {
   router,
-  updateUsersTable,
-  checkLogin,
+  createUser,
+  getUser,
   updateTeamTable,
 }

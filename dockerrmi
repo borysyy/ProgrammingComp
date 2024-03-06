@@ -1,5 +1,0 @@
-#!/bin/bash
-
-# Get IDs of Docker images and remove them
-docker images -q | xargs docker rmi -f
-
