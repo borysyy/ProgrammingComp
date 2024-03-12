@@ -1,5 +1,0 @@
-#!/usr/bin/env fish
-
-for ID in (docker images --format "{{.ID}}")
-    docker rmi -f $ID
-end
