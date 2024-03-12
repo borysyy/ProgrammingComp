@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Register Team</title>
+    <link href="./css/styles.css" rel="stylesheet" />
+  </head>
+  <body data-bs-theme="dark">
+    <div class="bg-primary">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-4">
+            <h1 class="display-4">SUNY Poly Programming Comp</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex align-items-center py-4">
+      <div class="container text-center">
+        <h1>Register Team</h1>
+
+        <form
+          id="teamForm"
+          class="d-flex flex-column justify-contents-center align-items-center"
+          action="/registerteam"
+          method="POST"
+        >
+          <div>
+            <input
+              class="form-control mb-3 col-auto"
+              name="teamname"
+              type="text"
+              placeholder="Team Name"
+              required
+            />
+          </div>
+
+          <div id="teamMembers">
+            <input
+              class="form-control mb-3"
+              name="email"
+              type="text"
+              placeholder="Email"
+              value="<%= email %>"
+              required
+              readonly
+            />
+          </div>
+
+          <div>
+            <input
+              id="addField"
+              class="btn btn-success"
+              name="addField"
+              type="button"
+              value="Add Team Member"
+            />
+
+            <input
+              id="removeField"
+              class="btn btn-danger"
+              name="removeField"
+              type="button"
+              value="Remove Member"
+            />
+            <input
+              id="submitBtn"
+              class="btn btn-primary"
+              name="submit"
+              type="submit"
+              value="Submit Team"
+            />
+          </div>
+        </form>
+
+        <div class="container w-25 mt-5">
+          <div class="mx-auto text-center">
+            <% for (const message of errorMessages) { %>
+            <div class="alert alert-danger" role="alert"><%= message %></div>
+            <% } %> <% for (const message of messages) { %>
+            <div class="alert alert-success" role="alert"><%= message %></div>
+            <% } %> <% for (const message of successMessages) { %>
+            <div class="alert alert-success" role="alert"><%= message %></div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const addFieldButton = document.getElementById('addField')
+        const removeFieldButton = document.getElementById('removeField')
+        const teamMembersContainer = document.getElementById('teamMembers')
+
+        addFieldButton.addEventListener('click', function () {
+          const newInput = document.createElement('input')
+          newInput.className = 'form-control mb-3'
+          newInput.name = 'email'
+          newInput.type = 'text'
+          newInput.placeholder = 'Email'
+          teamMembersContainer.appendChild(newInput)
+        })
+
+        removeFieldButton.addEventListener('click', function () {
+          const inputs = teamMembersContainer.querySelectorAll('input')
+          if (inputs.length > 1) {
+            const lastInput = inputs[inputs.length - 1]
+            teamMembersContainer.removeChild(lastInput)
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

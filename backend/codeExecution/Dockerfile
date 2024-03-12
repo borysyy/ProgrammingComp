@@ -15,7 +15,7 @@ RUN apt-get update -y && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the code into the container
-COPY submissions/ /submissions/ 
+# COPY submissions/ /submissions/ 
 
 # Define an entry point script that will be executed by the Node.js server
 COPY entrypoint.sh /entrypoint.sh

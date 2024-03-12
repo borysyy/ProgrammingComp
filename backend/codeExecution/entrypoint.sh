@@ -74,3 +74,4 @@ fi
 
 # Write status to program_output file
 sed -i "1s/^/${status//\//\\/}\n\n/" "$program_output"
+

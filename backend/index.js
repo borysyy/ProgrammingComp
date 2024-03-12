@@ -59,6 +59,8 @@ app.use(passport.session())
 // Flash messages middleware
 app.use(flash())
 
+app.use(bodyParser.json())
+
 // Passport local strategy for authenticating users
 passport.use(
   new LocalStrategy(
@@ -107,18 +109,30 @@ app.get('/login', (req, res) => {
 app.post(
   '/login',
   passport.authenticate('local', {
-    successRedirect: '/submission',
+    successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: true,
   })
 )
 
+app.get(
+  '/',
+  (req, res, next) => {
+    if (req.isAuthenticated()) return next()
+    res.redirect('/login')
+  },
+  (req, res) => {
+    res.render('index')
+  }
+)
+
+// Route for displaying submissions page
 app.get('/submission', (req, res) => {
   res.render('submission', { username: req.user.username })
 })
 
 // Route for logging out
-app.get('/logout', (req, res, next) =>
+app.post('/logout', (req, res, next) =>
   req.logout((error) => {
     if (error) return next(error)
     req.flash('message', 'Logged Out')
@@ -162,11 +176,61 @@ app.post('/register', async (req, res) => {
       return res.redirect('/register')
     }
   } catch (error) {
-    console.error('Error updating user:', error)
-    req.flash('error', 'An error occurred while updating user')
+    console.error('Error creating user:', error)
+    req.flash('error', 'An error occurred while creating user')
     return res.redirect('/register')
   }
 })
+
+// Route for display register team page
+app.get(
+  '/registerteam',
+  (req, res, next) => {
+    if (req.isAuthenticated()) return next()
+    res.redirect('/login')
+  },
+  (req, res) => {
+    const errorMessages = req.flash('error')
+    const messages = req.flash('message')
+    const successMessages = req.flash('success')
+    res.render('registerTeam', {
+      errorMessages,
+      messages,
+      successMessages,
+      email: req.user.email,
+    })
+  }
+)
+
+// Route for registering team in the database
+app.post(
+  '/registerteam',
+
+  async (req, res) => {
+    const teamname = req.body.teamname
+    const members = Array.isArray(req.body.email)
+      ? req.body.email
+      : [req.body.email]
+
+    try {
+      const result = await SPCP.createTeam(teamname, members)
+
+      console.log(result)
+
+      if (result.success) {
+        req.flash('success', 'Team created successfully')
+        return res.redirect('/submission')
+      } else {
+        req.flash('error', result.reason)
+        return res.redirect('/registerteam')
+      }
+    } catch (error) {
+      console.error('Error creating team:', error)
+      req.flash('error', 'An error occurred while creating team')
+      return res.redirect('/registerteam')
+    }
+  }
+)
 
 // Route for displaying user information
 app.get(
@@ -188,19 +252,6 @@ app.use((req, res, next) => {
   if (req.isAuthenticated()) return next()
   res.redirect('/login')
 }, express.static(path.join(__dirname, 'dist')))
-
-// Route for registering team in the database
-app.post('/RegisterTeam/register', async (req, res) => {
-  console.log(JSON.stringify(req.body))
-  const teamName = req.body.teamName
-  const allEmails = req.body.teamMember
-  const cntEmails = Object.keys(allEmails).length
-  const dbStatus = SPCP.updateTeamTable(teamName, allEmails, cntEmails)
-  res.send(dbStatus)
-})
-
-// // Set the working directory within the Node.js server
-// process.chdir(path.join(__dirname, 'codeExecution'))
 
 const codeExecutionDir = `${__dirname}/codeExecution`
 
@@ -240,9 +291,9 @@ app.post('/execute', upload.single('file'), async (req, res) => {
 
     // Add a job to the queue
     codeQueue.add({
-      username: username,
-      command: command,
-      outputDirectory: outputDirectory,
+      username,
+      command,
+      outputDirectory,
     })
   }
 })
