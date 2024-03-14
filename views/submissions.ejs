@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Submission</title>
+    <link href="../../css/styles.css" rel="stylesheet" />
+  </head>
+
+  <body data-bs-theme="dark">
+    <div class="bg-primary">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-4">
+            <h1 class="display-4">SUNY Poly Programming Comp</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="mt-4 text-center">
+        <div class="container my-4 py-4">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Teamname</th>
+                <th scope="col">Score</th>
+                <th scope="col">Members</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= team.teamname %></td>
+                <td><%= team.score %></td>
+                <td><%= team.members.replace(",", ", ") %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="container my-4 py-4">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Compiler Output</th>
+                <th scope="col">Program Output</th>
+                <th scope="col">Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><%= %></td>
+                <td><%= %></td>
+                <td><%= %></td>
+                <td><%= %></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
