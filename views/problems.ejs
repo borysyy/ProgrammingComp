@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Submission</title>
+    <link href="../../css/styles.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  </head>
+
+  <body data-bs-theme="dark">
+    <div class="bg-primary">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-4">
+            <h1 class="display-4">SUNY Poly Programming Comp</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="mt-4 text-center">
+        <div class="container my-4 py-4">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col" class="col-3">Problem Number</th>
+                <th scope="col" class="col-3">Problem Link</th>
+                <th scope="col" class="col-3"></th>
+                <th scope="col" class="col-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% for (let r = 0; r < problems.length; r++) { %> <% const
+              {problem_num, problem_name} = problems[r] %>
+              <tr data-index="<%= r %>">
+                <td><%= problem_num %></td>
+
+                <td>
+                  <a href="/problems/<%= problem_name %>.zip">
+                    <%= problem_name %>.zip
+                  </a>
+                </td>
+                <td>
+                  <input type="file" name="file" class="form-control" />
+                </td>
+                <td>
+                  <button class="btn btn-primary">Submit</button>
+                </td>
+              </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $("button").on("click", async function () {
+        const index = $(this).parent().parent().data("index");
+        const file = $("input")[index].files[0];
+        if (file) {
+          const user = "<%= user %>";
+          const data = new FormData();
+
+          data.append("file", file);
+          data.append("user", user);
+
+          const pathname = window.location.pathname.split("/");
+          const semester = pathname[2];
+          const year = pathname[3];
+
+          data.append("semester", semester);
+          data.append("year", year);
+
+          const problems = <%- JSON.stringify(problems) %>;
+
+          data.append("problems", problems);
+
+          data.append("index", index);
+
+
+          const status = (
+            await fetch("/submit", {
+              method: "POST",
+              body: data,
+            })
+          ).status;
+
+          if (status == 200) {
+            console.log("Uploaded successfully");
+          } else {
+            console.log("Upload failed");
+          }
+        } else {
+          console.log("No file uploaded");
+        }
+      });
+    </script>
+  </body>
+</html>

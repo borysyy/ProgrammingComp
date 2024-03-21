@@ -125,18 +125,6 @@ app.get(
   }
 );
 
-// Route for displaying submissions page
-app.get(
-  "/submit",
-  (req, res, next) => {
-    if (req.isAuthenticated()) return next();
-    res.redirect("/login");
-  },
-  (req, res) => {
-    res.render("submit", { user: req.user });
-  }
-);
-
 app.get(
   "/submissions/:semester/:year",
   (req, res, next) => {
@@ -150,6 +138,21 @@ app.get(
       req.params.year
     );
     res.render("submissions", { user: req.user, team });
+  }
+);
+
+app.get(
+  "/problems/:semester/:year",
+  (req, res, next) => {
+    if (req.isAuthenticated()) return next();
+    res.redirect("/login");
+  },
+  async (req, res) => {
+    const problems = await SPCP.getProblems(
+      req.params.semester,
+      req.params.year
+    );
+    res.render("problems", { user: req.user, problems });
   }
 );
 
@@ -292,12 +295,18 @@ const storage = multer.diskStorage({
 // Set up multer middleware for file uploads
 const upload = multer({ storage: storage });
 
-// Handle POST request to '/execute' endpoint
-app.post("/execute", upload.single("file"), async (req, res) => {
+// Handle POST request to '/submit' endpoint
+app.post("/submit", upload.single("file"), async (req, res) => {
+  const email = req.user.email;
   const username = req.user.username;
-  // const userDirectory = `/submissions/${username}`
-  const outputDirectory = `${codeExecutionDir}/output/${username}`;
+  const semester = req.body.semester;
+  const year = req.body.year;
+  const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
+  // const problem_name = req.body.problems[req.body.index].problem_name;
 
+  console.log(req.body.problems[req.body.index]);
+
+  const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${teamname}/${username}`;
   // Create user-specific directories
   try {
     if (!fs.existsSync(outputDirectory)) {
@@ -306,11 +315,9 @@ app.post("/execute", upload.single("file"), async (req, res) => {
   } catch (err) {
     console.error(err);
   }
-
   if (req.file) {
     const sourceCodeFile = `/submissions/${req.user.username}/${req.file.originalname}`;
     const command = ["/entrypoint.sh", req.user.username, sourceCodeFile];
-
     // Add a job to the queue
     codeQueue.add({
       username,
@@ -318,13 +325,14 @@ app.post("/execute", upload.single("file"), async (req, res) => {
       outputDirectory,
     });
   }
+  res.sendStatus(200);
 });
 
 // Process the jobs
 codeQueue.process(async (job, done) => {
   console.log("Processing job:", job.id);
 
-  const { username, command, outputDirectory } = job.data;
+  const { command, outputDirectory } = job.data;
 
   // Create a Docker container
   const container = await docker
@@ -337,7 +345,7 @@ codeQueue.process(async (job, done) => {
       HostConfig: {
         Binds: [
           `${codeExecutionDir}/submissions:/submissions`,
-          `${codeExecutionDir}/output:/output`,
+          `${outputDirectory}:/output`,
         ],
       },
     })
@@ -360,12 +368,12 @@ codeQueue.process(async (job, done) => {
   // Read output file and send data as response
   try {
     const compilerOutput = fs.readFileSync(
-      `${outputDirectory}/${username}_compiler_output.txt`,
+      `${outputDirectory}/compiler_output.txt`,
       "utf-8"
     );
 
     const programOutput = fs.readFileSync(
-      `${outputDirectory}/${username}_program_output.txt`,
+      `${outputDirectory}/program_output.txt`,
       "utf-8"
     );
     done(null, { compilerOutput, programOutput });

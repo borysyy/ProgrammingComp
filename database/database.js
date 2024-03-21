@@ -106,10 +106,36 @@ function createTeam(teamname, members, semester, year) {
   });
 }
 
+function getProblems(semester, year) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.all(
+            "SELECT problem_num, problem_name FROM problems WHERE competition_ID = ?;",
+            [result.ID],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              }
+              return resolve(result);
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   router,
   createUser,
   getUser,
   createTeam,
   getTeam,
+  getProblems,
 };

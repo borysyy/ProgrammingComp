@@ -10,13 +10,13 @@ filename="$2"
 extension="${filename##*.}" # Extract file extension
 
 # Create a unique output directory for each user
-output_directory="/output/${username}"
+output_directory="/output"
 
 # Set default status to success
 status="Success"
 
-program_output="${output_directory}/${username}_program_output.txt"
-compiler_output="${output_directory}/${username}_compiler_output.txt"
+program_output="${output_directory}/program_output.txt"
+compiler_output="${output_directory}/compiler_output.txt"
 
 echo $'\n' >$program_output
 echo $'\n' >$compiler_output
