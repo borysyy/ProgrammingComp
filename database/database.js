@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const { error } = require("console");
+const { rejects } = require("assert");
 const router = express.Router();
 const sqlite3 = require("sqlite3").verbose();
 const DATABASE = path.resolve("./database/database.db");
@@ -29,7 +30,7 @@ function createUser(username, password, email) {
         } else {
           // Proceed with the insertion
           const insertSql =
-            "INSERT INTO users (username, password, email, teamname) VALUES (?, ?, ?, null);";
+            "INSERT INTO users (username, password, email) VALUES (?, ?, ?);";
           db.run(insertSql, [username, password, email], (error) => {
             if (error) {
               reject(error); // Reject if there's an error during insertion
@@ -131,6 +132,72 @@ function getProblems(semester, year) {
   });
 }
 
+function recordSubmission(semester, year, username, teamname, problem_name) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          const competition_ID = result.ID;
+          db.get(
+            "SELECT count(*) as count FROM submissions WHERE competition_ID = ? AND teamname = ? AND username = ? AND problem_name = ?;",
+            [competition_ID, teamname, username, problem_name],
+            (error, result) => {
+              if (error) {
+                reject(error); // Reject if there's an error during insertion
+              } else {
+                if (result.count == 0) {
+                  return db.run(
+                    "INSERT INTO submissions VALUES (?,?,?,?)",
+                    [competition_ID, teamname, username, problem_name],
+                    (error) => {
+                      if (error) {
+                        reject(error); // Reject if there's an error during insertion
+                      } else {
+                        resolve({ success: true });
+                      }
+                    }
+                  );
+                } else {
+                  resolve({ success: true });
+                }
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
+function getSubmission(semester, year, teamname) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.all(
+            "SELECT username, problem_name FROM submissions WHERE competition_ID = ? AND teamname = ?;",
+            [result.ID, teamname],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              }
+              return resolve(result);
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   router,
   createUser,
@@ -138,4 +205,6 @@ module.exports = {
   createTeam,
   getTeam,
   getProblems,
+  recordSubmission,
+  getSubmission,
 };

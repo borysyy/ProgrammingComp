@@ -13,6 +13,13 @@
           <div class="col-4">
             <h1 class="display-4">SUNY Poly Programming Comp</h1>
           </div>
+          <div
+            class="col-4 d-flex flex-column align-items-center justify-content-end"
+          >
+            <a href="/submissions/spring/2024" class="btn btn-primary">
+              Go to your submissions here!
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -25,8 +32,8 @@
               <tr>
                 <th scope="col" class="col-3">Problem Number</th>
                 <th scope="col" class="col-3">Problem Link</th>
-                <th scope="col" class="col-3"></th>
-                <th scope="col" class="col-3"></th>
+                <th scope="col" class="col-3">Submit file here</th>
+                <th scope="col" class="col-3">Submit code</th>
               </tr>
             </thead>
             <tbody>
@@ -50,6 +57,10 @@
               <% } %>
             </tbody>
           </table>
+
+          <div class="container w-25 mt-5">
+            <div class="mx-auto text-center" id="messages"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -59,10 +70,10 @@
         const index = $(this).parent().parent().data("index");
         const file = $("input")[index].files[0];
         if (file) {
-          const user = "<%= user %>";
           const data = new FormData();
-
           data.append("file", file);
+
+          const user = "<%= user %>";
           data.append("user", user);
 
           const pathname = window.location.pathname.split("/");
@@ -74,10 +85,9 @@
 
           const problems = <%- JSON.stringify(problems) %>;
 
-          data.append("problems", problems);
+          data.append("problems", JSON.stringify(problems));
 
           data.append("index", index);
-
 
           const status = (
             await fetch("/submit", {
@@ -87,12 +97,36 @@
           ).status;
 
           if (status == 200) {
-            console.log("Uploaded successfully");
+            $("#messages").html(
+            `
+            <div
+                class="alert alert-success"
+                role="alert"
+
+              >Uploaded successfully</div>
+            `);
+
           } else {
-            console.log("Upload failed");
+            $("#messages").html(
+              `
+              <div
+                  class="alert alert-danger"
+                  role="alert"
+
+                >Uploaded failed</div>
+              `);
+
           }
         } else {
-          console.log("No file uploaded");
+          $("#messages").html(
+            `
+            <div
+                class="alert alert-danger"
+                role="alert"
+
+              >No file uploaded</div>
+            `);
+
         }
       });
     </script>

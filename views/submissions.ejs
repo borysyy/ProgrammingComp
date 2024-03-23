@@ -44,15 +44,21 @@
                 <th scope="col">Compiler Output</th>
                 <th scope="col">Program Output</th>
                 <th scope="col">Score</th>
+                <th scope="col">Problem</th>
               </tr>
             </thead>
             <tbody>
+              <% for (const submission of submissions) { %>
+
               <tr>
-                <td><%= %></td>
-                <td><%= %></td>
-                <td><%= %></td>
-                <td><%= %></td>
+                <td><%= submission.username %></td>
+                <td><%= submission.compilerOutput %></td>
+                <td><%= submission.programOutput %></td>
+                <td><%= 0 %></td>
+                <td><%= submission.problem_name %></td>
               </tr>
+
+              <% } %>
             </tbody>
           </table>
         </div>

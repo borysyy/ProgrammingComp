@@ -96,6 +96,9 @@ passport.serializeUser((user, done) => done(null, user));
 // Deserialize user object
 passport.deserializeUser((user, done) => done(null, user));
 
+// Code execution directory variable
+const codeExecutionDir = `${__dirname}/codeExecution`;
+
 // Route for displaying login page
 app.get("/login", (req, res) => {
   const errorMessages = req.flash("error");
@@ -114,6 +117,7 @@ app.post(
   })
 );
 
+// Route for the root page
 app.get(
   "/",
   (req, res, next) => {
@@ -125,6 +129,7 @@ app.get(
   }
 );
 
+// Route for the submissions page
 app.get(
   "/submissions/:semester/:year",
   (req, res, next) => {
@@ -137,10 +142,43 @@ app.get(
       req.params.semester,
       req.params.year
     );
-    res.render("submissions", { user: req.user, team });
+    const submissions = await SPCP.getSubmission(
+      req.params.semester,
+      req.params.year,
+      req.user.username,
+      team.teamname
+    );
+    for (const submission of submissions) {
+      const year = req.params.year;
+      const semester = req.params.semester;
+      const problem_name = submission.problem_name;
+      const teamname = team.teamname;
+      const username = submission.username;
+
+      const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
+
+      try {
+        const compilerOutput = fs.readFileSync(
+          `${outputDirectory}/compiler_output.txt`,
+          "utf-8"
+        );
+
+        const programOutput = fs.readFileSync(
+          `${outputDirectory}/program_output.txt`,
+          "utf-8"
+        );
+
+        submission.compilerOutput = compilerOutput;
+        submission.programOutput = programOutput;
+      } catch (err) {
+        console.error("Error reading the file:", err);
+      }
+    }
+    res.render("submissions", { user: req.user, team, submissions });
   }
 );
 
+// Route for the problems page
 app.get(
   "/problems/:semester/:year",
   (req, res, next) => {
@@ -152,7 +190,10 @@ app.get(
       req.params.semester,
       req.params.year
     );
-    res.render("problems", { user: req.user, problems });
+    res.render("problems", {
+      user: req.user,
+      problems,
+    });
   }
 );
 
@@ -244,7 +285,7 @@ app.post(
 
       if (result.success) {
         req.flash("success", "Team created successfully");
-        return res.redirect("/submit");
+        return res.redirect("/");
       } else {
         req.flash("error", result.reason);
         return res.redirect("/registerteam");
@@ -278,8 +319,6 @@ app.use((req, res, next) => {
   res.redirect("/login");
 }, express.static(path.join(__dirname, "dist")));
 
-const codeExecutionDir = `${__dirname}/codeExecution`;
-
 // Configure storage for uploaded files
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -302,11 +341,11 @@ app.post("/submit", upload.single("file"), async (req, res) => {
   const semester = req.body.semester;
   const year = req.body.year;
   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
-  // const problem_name = req.body.problems[req.body.index].problem_name;
+  const problems = JSON.parse(req.body.problems);
+  const problem_name = problems[req.body.index].problem_name;
 
-  console.log(req.body.problems[req.body.index]);
+  const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
 
-  const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${teamname}/${username}`;
   // Create user-specific directories
   try {
     if (!fs.existsSync(outputDirectory)) {
@@ -325,6 +364,8 @@ app.post("/submit", upload.single("file"), async (req, res) => {
       outputDirectory,
     });
   }
+  await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
+
   res.sendStatus(200);
 });
 
