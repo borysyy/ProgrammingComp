@@ -145,7 +145,6 @@ app.get(
     const submissions = await SPCP.getSubmission(
       req.params.semester,
       req.params.year,
-      req.user.username,
       team.teamname
     );
     for (const submission of submissions) {
@@ -281,8 +280,6 @@ app.post(
     try {
       const result = await SPCP.createTeam(teamname, members, "spring", 2024);
 
-      console.log(result);
-
       if (result.success) {
         req.flash("success", "Team created successfully");
         return res.redirect("/");
@@ -356,10 +353,9 @@ app.post("/submit", upload.single("file"), async (req, res) => {
   }
   if (req.file) {
     const sourceCodeFile = `/submissions/${req.user.username}/${req.file.originalname}`;
-    const command = ["/entrypoint.sh", req.user.username, sourceCodeFile];
+    const command = ["/entrypoint.sh", sourceCodeFile];
     // Add a job to the queue
     codeQueue.add({
-      username,
       command,
       outputDirectory,
     });

@@ -1,12 +1,11 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then
-    echo "Usage: $0 <username> <source_code_file>"
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <source_code_file>"
     exit 1
 fi
 
-username="$1"
-filename="$2"
+filename="$1"
 extension="${filename##*.}" # Extract file extension
 
 # Create a unique output directory for each user
