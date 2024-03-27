@@ -125,7 +125,10 @@ app.get(
     res.redirect("/login");
   },
   (req, res) => {
-    res.render("index");
+    const errorMessages = req.flash("error");
+    const messages = req.flash("message");
+    const successMessages = req.flash("success");
+    res.render("index", { errorMessages, messages, successMessages });
   }
 );
 

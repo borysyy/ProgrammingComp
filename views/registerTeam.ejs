@@ -3,6 +3,7 @@
   <head>
     <title>Register Team</title>
     <link href="./css/styles.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   </head>
   <body data-bs-theme="dark">
     <div class="bg-primary">
@@ -84,32 +85,60 @@
             <% } %>
           </div>
         </div>
+
+        <div class="container w-25 mt-5">
+          <div class="mx-auto text-center" id="messages"></div>
+        </div>
       </div>
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const addFieldButton = document.getElementById('addField')
-        const removeFieldButton = document.getElementById('removeField')
-        const teamMembersContainer = document.getElementById('teamMembers')
+      function removeErrorMessage() {
+        $("#messages").remove(); // Remove the message by clearing the HTML content of #messages
+      }
 
-        addFieldButton.addEventListener('click', function () {
-          const newInput = document.createElement('input')
-          newInput.className = 'form-control mb-3'
-          newInput.name = 'email'
-          newInput.type = 'text'
-          newInput.placeholder = 'Email'
-          teamMembersContainer.appendChild(newInput)
-        })
+      document.addEventListener("DOMContentLoaded", function () {
+        const addFieldButton = document.getElementById("addField");
+        const removeFieldButton = document.getElementById("removeField");
+        const teamMembersContainer = document.getElementById("teamMembers");
 
-        removeFieldButton.addEventListener('click', function () {
-          const inputs = teamMembersContainer.querySelectorAll('input')
-          if (inputs.length > 1) {
-            const lastInput = inputs[inputs.length - 1]
-            teamMembersContainer.removeChild(lastInput)
+        addFieldButton.addEventListener("click", function () {
+          const inputs = teamMembersContainer.querySelectorAll("input");
+          if (inputs.length <= 3) {
+            const newInput = document.createElement("input");
+            newInput.className = "form-control mb-3";
+            newInput.name = "email";
+            newInput.type = "text";
+            newInput.placeholder = "Email";
+
+            teamMembersContainer.appendChild(newInput);
           }
-        })
-      })
+          if (inputs.length == 3) {
+            $("#messages").html(
+              `
+              <div
+                  class="alert alert-danger"
+                  role="alert"
+
+                >Max Teammates</div>
+              `
+            );
+
+            $("#addField").hide();
+          }
+        });
+
+        removeFieldButton.addEventListener("click", function () {
+          const inputs = teamMembersContainer.querySelectorAll("input");
+          if (inputs.length > 1) {
+            const lastInput = inputs[inputs.length - 1];
+            teamMembersContainer.removeChild(lastInput);
+            $("#addField").show();
+          }
+
+          removeErrorMessage();
+        });
+      });
     </script>
   </body>
 </html>

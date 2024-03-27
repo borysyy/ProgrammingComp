@@ -36,5 +36,16 @@
         </div>
       </div>
     </div>
+    <div class="container w-25 mt-5">
+      <div class="mx-auto text-center">
+        <% for (const message of errorMessages) { %>
+        <div class="alert alert-danger" role="alert"><%= message %></div>
+        <% } %> <% for (const message of messages) { %>
+        <div class="alert alert-success" role="alert"><%= message %></div>
+        <% } %> <% for (const message of successMessages) { %>
+        <div class="alert alert-success" role="alert"><%= message %></div>
+        <% } %>
+      </div>
+    </div>
   </body>
 </html>
