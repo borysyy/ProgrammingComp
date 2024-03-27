@@ -91,52 +91,35 @@
         </div>
       </div>
     </div>
-
     <script>
-      function removeErrorMessage() {
-        $("#messages").remove(); // Remove the message by clearing the HTML content of #messages
-      }
+      $(document).ready(function () {
+        const alertMessage = `
+          <div class="alert alert-danger" role="alert">Max Teammates</div>
+        `;
+        const messagesDiv = $("#messages");
 
-      document.addEventListener("DOMContentLoaded", function () {
-        const addFieldButton = document.getElementById("addField");
-        const removeFieldButton = document.getElementById("removeField");
-        const teamMembersContainer = document.getElementById("teamMembers");
-
-        addFieldButton.addEventListener("click", function () {
-          const inputs = teamMembersContainer.querySelectorAll("input");
+        $("#addField").click(function () {
+          const inputs = $("#teamMembers input");
           if (inputs.length <= 3) {
-            const newInput = document.createElement("input");
-            newInput.className = "form-control mb-3";
-            newInput.name = "email";
-            newInput.type = "text";
-            newInput.placeholder = "Email";
-
-            teamMembersContainer.appendChild(newInput);
-          }
-          if (inputs.length == 3) {
-            $("#messages").html(
-              `
-              <div
-                  class="alert alert-danger"
-                  role="alert"
-
-                >Max Teammates</div>
-              `
+            const newInput = $(
+              '<input class="form-control mb-3" type="text" name="email" placeholder="Email">'
             );
-
-            $("#addField").hide();
+            $("#teamMembers").append(newInput);
+          }
+          if (inputs.length === 3) {
+            messagesDiv.html(alertMessage);
+            messagesDiv.show();
+            $("#addField").prop("disabled", true);
           }
         });
 
-        removeFieldButton.addEventListener("click", function () {
-          const inputs = teamMembersContainer.querySelectorAll("input");
+        $("#removeField").click(function () {
+          const inputs = $("#teamMembers input");
           if (inputs.length > 1) {
-            const lastInput = inputs[inputs.length - 1];
-            teamMembersContainer.removeChild(lastInput);
-            $("#addField").show();
+            inputs.last().remove();
+            $("#addField").prop("disabled", false);
           }
-
-          removeErrorMessage();
+          messagesDiv.hide();
         });
       });
     </script>
