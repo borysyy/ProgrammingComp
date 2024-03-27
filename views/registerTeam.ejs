@@ -9,7 +9,7 @@
     <div class="bg-primary">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-4">
+          <div class="col-6">
             <h1 class="display-4">SUNY Poly Programming Comp</h1>
           </div>
         </div>
@@ -100,9 +100,10 @@
 
         $("#addField").click(function () {
           const inputs = $("#teamMembers input");
+
           if (inputs.length <= 3) {
             const newInput = $(
-              '<input class="form-control mb-3" type="text" name="email" placeholder="Email">'
+              '<input class="form-control mb-3" type="text" name="email" placeholder="Email" required>'
             );
             $("#teamMembers").append(newInput);
           }
@@ -115,10 +116,12 @@
 
         $("#removeField").click(function () {
           const inputs = $("#teamMembers input");
+
           if (inputs.length > 1) {
             inputs.last().remove();
             $("#addField").prop("disabled", false);
           }
+
           messagesDiv.hide();
         });
       });
