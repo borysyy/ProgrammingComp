@@ -87,30 +87,27 @@
         </div>
 
         <div class="container w-25 mt-5">
-          <div class="mx-auto text-center" id="messages"></div>
+          <div class="mx-auto text-center" id="messages">
+            <div class="alert alert-danger" role="alert">Max Teammates</div>
+          </div>
         </div>
       </div>
     </div>
     <script>
       $(document).ready(function () {
-        const alertMessage = `
-          <div class="alert alert-danger" role="alert">Max Teammates</div>
-        `;
-        const messagesDiv = $("#messages");
-
+        $("#messages").hide();
         $("#addField").click(function () {
           const inputs = $("#teamMembers input");
 
           if (inputs.length <= 3) {
             const newInput = $(
-              '<input class="form-control mb-3" type="text" name="email" placeholder="Email" required>'
+              '<input class="form-control mb-3" type="text" name="email" placeholder="SUNY Poly Email" pattern="^[a-zA-Z]{1,10}@sunypoly.edu$" required>'
             );
             $("#teamMembers").append(newInput);
           }
           if (inputs.length === 3) {
-            messagesDiv.html(alertMessage);
-            messagesDiv.show();
-            $("#addField").prop("disabled", true);
+            $("#messages").show();
+            $("#addField").hide();
           }
         });
 
@@ -119,10 +116,10 @@
 
           if (inputs.length > 1) {
             inputs.last().remove();
-            $("#addField").prop("disabled", false);
+            $("#addField").show();
           }
 
-          messagesDiv.hide();
+          $("#messages").hide();
         });
       });
     </script>

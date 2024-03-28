@@ -83,6 +83,10 @@ function getTeam(email, semester, year) {
 
 function createTeam(teamname, members, semester, year) {
   return new Promise((resolve, reject) => {
+    // if (members.length > 4) {
+    //   reject(new Error("Number of members should be 4 or less."));
+    //   return;
+    // }
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
       [semester, year],

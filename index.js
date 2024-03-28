@@ -279,8 +279,13 @@ app.post(
     const members = Array.isArray(req.body.email)
       ? req.body.email
       : [req.body.email];
+    const maxMembers = 4;
 
     try {
+      if (members.length > maxMembers) {
+        req.flash("error", "Maximum team size exceeded");
+        return res.redirect("/registerteam");
+      }
       const result = await SPCP.createTeam(teamname, members, "spring", 2024);
 
       if (result.success) {
