@@ -101,8 +101,9 @@
 
           if (inputs.length <= 3) {
             const newInput = $(
-              '<input class="form-control mb-3" type="text" name="email" placeholder="SUNY Poly Email" pattern="^[a-zA-Z]{1,10}@sunypoly.edu$" required>'
+              '<input class="form-control mb-3" type="text" name="email" placeholder="SUNY Poly Email" pattern="^[a-zA-Z]{1,10}@sunypoly.edu$" oninvalid="this.setCustomValidity(\'Please enter a valid SUNY Poly email\')"   required>'
             );
+
             $("#teamMembers").append(newInput);
           }
           if (inputs.length === 3) {

@@ -227,6 +227,22 @@ app.get(
 // Route for registering users
 app.post("/register", async (req, res) => {
   const { email, username, password, password_confirm } = req.body;
+  const emailExpression = new RegExp("^[a-zA-Z]{1,10}@sunypoly.edu$");
+  const passwordExpression = new RegExp("[a-zA-Z0-9]{8,10}");
+
+  if (emailExpression.test(email) === false) {
+    req.flash("error", "Email must be a valid SUNY Poly email");
+    return res.redirect("/register");
+  }
+
+  if (passwordExpression.test(password) === false) {
+    req.flash(
+      "error",
+      "Password must be 8-10 characters long with an uppercase, lowercase, and a number"
+    );
+    return res.redirect("/register");
+  }
+
   if (password != password_confirm) {
     req.flash("error", "Passwords do not match, please recheck your passwords");
     return res.redirect("/register");
@@ -280,12 +296,24 @@ app.post(
       ? req.body.email
       : [req.body.email];
     const maxMembers = 4;
+    const emailExpression = new RegExp("^[a-zA-Z]{1,10}@sunypoly.edu$");
 
     try {
+      for (let i = 0; i < members.length; i++) {
+        if (emailExpression.test(members[i]) === false) {
+          req.flash(
+            "error",
+            "Each team member must have a valid SUNY Poly email"
+          );
+          return res.redirect("/registerteam");
+        }
+      }
+
       if (members.length > maxMembers) {
         req.flash("error", "Maximum team size exceeded");
         return res.redirect("/registerteam");
       }
+
       const result = await SPCP.createTeam(teamname, members, "spring", 2024);
 
       if (result.success) {
