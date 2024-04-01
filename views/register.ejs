@@ -31,6 +31,7 @@
             class="form-control"
             pattern="^[a-zA-Z]{1,10}@sunypoly.edu$"
             oninvalid="this.setCustomValidity('Please enter a valid SUNY Poly email')"
+            onchange="try{setCustomValidity('')}catch(e){}"
             required
           />
         </div>
@@ -53,6 +54,7 @@
             class="form-control"
             pattern="[a-zA-Z0-9]{8,10}"
             oninvalid="this.setCustomValidity('Password must be 8-10 characters long with an uppercase, lowercase, and a number')"
+            onchange="try{setCustomValidity('')}catch(e){}"
             required
           />
         </div>
