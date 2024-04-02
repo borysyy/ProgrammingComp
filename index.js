@@ -227,7 +227,7 @@ app.get(
 // Route for registering users
 app.post("/register", async (req, res) => {
   const { email, username, password, password_confirm } = req.body;
-  const emailExpression = new RegExp("^[a-zA-Z]{1,10}@sunypoly.edu$");
+  const emailExpression = new RegExp("^[a-zA-Z0-9]{1,20}@sunypoly.edu$");
   const passwordExpression = new RegExp("[a-zA-Z0-9]{8,10}");
 
   if (emailExpression.test(email) === false) {

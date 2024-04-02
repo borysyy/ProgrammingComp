@@ -30,7 +30,7 @@
             placeholder="SUNY Poly Email"
             id="email"
             class="form-control"
-            pattern="^[a-zA-Z]{1,10}@sunypoly.edu$"
+            pattern="^[a-zA-Z0-9]{1,20}@sunypoly.edu$"
             oninvalid="this.setCustomValidity('Please enter a valid SUNY Poly email')"
             onchange="try{setCustomValidity('')}catch(e){}"
             required
