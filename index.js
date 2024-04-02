@@ -385,6 +385,7 @@ codeQueue.process(async (job, done) => {
   const { command, outputDirectory } = job.data;
 
   // Create a Docker container
+  try{
   const container = await docker
     .createContainer({
       Image: "code-execute",
@@ -402,8 +403,13 @@ codeQueue.process(async (job, done) => {
     .catch((err) => console.error("Error creating the container:", err));
 //
    console.log("Container created:", container.id)
+  } catch (err) {
+    console.log("Could not create container: ", err);
+    return done(err);
+  }
 
   // Start the container
+  try{
   await container
     .start()
     .catch((err) => console.error("Error starting the container:", err));
@@ -414,6 +420,11 @@ codeQueue.process(async (job, done) => {
     await container.stop();
   }
   await container.remove();
+  }
+  catch (err){
+    console.log("Could not start container: ", err);
+    return done(err);
+  }
 
   // Read output file and send data as response
   try {
