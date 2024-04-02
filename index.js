@@ -238,7 +238,7 @@ app.post("/register", async (req, res) => {
   if (passwordExpression.test(password) === false) {
     req.flash(
       "error",
-      "Password must be 8-10 characters long with an uppercase, lowercase, and a number"
+      "Password must be 8-10 characters long made up with uppercase, lowercase and numbers"
     );
     return res.redirect("/register");
   }
