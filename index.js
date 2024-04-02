@@ -229,6 +229,20 @@ app.post("/register", async (req, res) => {
   const { email, username, password, password_confirm } = req.body;
   const emailExpression = new RegExp("^[a-zA-Z0-9]{1,20}@sunypoly.edu$");
   const passwordExpression = new RegExp("[a-zA-Z0-9]{8,10}");
+  let index = email.indexOf("@");
+  let allowedUsername = 0;
+
+  if (index !== -1) {
+    allowedUsername = email.slice(0, index);
+  }
+
+  if (username !== allowedUsername) {
+    req.flash(
+      "error",
+      "Username must be your SUNY Poly userID ex: [userID]@sunypoly.edu"
+    );
+    return res.redirect("/register");
+  }
 
   if (emailExpression.test(email) === false) {
     req.flash("error", "Email must be a valid SUNY Poly email");

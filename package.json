@@ -2,6 +2,8 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "bull": "^4.12.2",
     "cors": "^2.8.5",
     "dockerode": "^4.0.0",

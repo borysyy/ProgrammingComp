@@ -4,6 +4,7 @@
     <title>Register</title>
     <link href="./css/styles.css" rel="stylesheet" />
     <link rel="icon" type="image/x-icon" href="/pictures/favicon.ico" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   </head>
   <body data-bs-theme="dark">
     <div class="bg-primary">
@@ -16,14 +17,16 @@
       </div>
     </div>
 
-    <div class="container text-center">
+    <div
+      class="d-flex flex-column align-items-center justify-content-center pt-5"
+    >
       <h1>Create Account</h1>
       <form
-        class="d-flex flex-column justify-contents-center align-items-center"
+        class="d-flex flex-column justify-content-center align-items-center"
         action="/register"
         method="post"
       >
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="email"
             name="email"
@@ -36,17 +39,18 @@
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="text"
             name="username"
-            placeholder="Username"
+            placeholder="SUNY Poly Username"
             id="username"
             class="form-control"
+            readonly
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="password"
             name="password"
@@ -59,7 +63,7 @@
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="password"
             name="password_confirm"
@@ -86,5 +90,10 @@
         </div>
       </div>
     </div>
+    <script>
+      $("#email").on("input", function () {
+        $("#username").val($(this).val().split("@")[0]);
+      });
+    </script>
   </body>
 </html>
