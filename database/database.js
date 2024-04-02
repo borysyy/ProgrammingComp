@@ -202,6 +202,58 @@ function getSubmission(semester, year, teamname) {
   });
 }
 
+function getScore (teamname, semester, year){
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.all(
+            "SELECT score FROM teams WHERE competition_ID = ? AND teamname = ?;",
+            [result.ID, teamname],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              } else {
+              return resolve(result);
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
+function updateScore(teamname, semester, year, score){
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.run(
+            "UPDATE teams SET score = ? WHERE competition_ID = ? AND teamname = ?",
+            [result.ID, teamname],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              } else {
+                return resolve({success : true});
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   router,
   createUser,
@@ -211,4 +263,5 @@ module.exports = {
   getProblems,
   recordSubmission,
   getSubmission,
+  getScore,
 };

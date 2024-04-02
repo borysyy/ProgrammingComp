@@ -17,8 +17,8 @@ status="Success"
 program_output="${output_directory}/program_output.txt"
 compiler_output="${output_directory}/compiler_output.txt"
 
-echo $'\n' >$program_output
-echo $'\n' >$compiler_output
+echo $'\n' > $program_output
+echo $'\n' > $compiler_output
 
 if [ "$extension" = "cpp" ]; then
     # Compile the program, with a 10 second limit, capturing compiler errors

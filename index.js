@@ -369,6 +369,11 @@ app.post("/submit", upload.single("file"), async (req, res) => {
     });
   }
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
+  let score = await SPCP.getScore(teamname, semester, year);
+  let judge = Math.floor(Math.random() * 100); //get score from judge
+  if (score < judge){
+    await updateScore(teamname, semester, year);
+  }
 
   res.sendStatus(200);
 });
@@ -395,8 +400,8 @@ codeQueue.process(async (job, done) => {
       },
     })
     .catch((err) => console.error("Error creating the container:", err));
-
-  console.log("Container created:", container.id);
+//
+   console.log("Container created:", container.id)
 
   // Start the container
   await container
