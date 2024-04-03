@@ -8,9 +8,12 @@
   <body data-bs-theme="dark">
     <div class="bg-primary">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-6">
-            <h1 class="display-4">SUNY Poly Programming Comp</h1>
+        <div class="row align-items-center">
+          <div class="col-8">
+            <h1 class="display-4">SUNY Poly Programming Competition</h1>
+          </div>
+          <div class="col-4 d-flex justify-content-end">
+            <a href="/" class="btn btn-primary">Back to home</a>
           </div>
         </div>
       </div>
@@ -124,8 +127,9 @@
 
           if (inputs.length <= 3) {
             const newInput = $(
-              '<input class="form-control mb-3" type="text" name="email" placeholder="SUNY Poly Email" pattern="^[a-zA-Z]{1,10}@sunypoly.edu$" required>'
+              '<input class="form-control mb-3" type="text" name="email" placeholder="SUNY Poly Email" pattern="^[a-zA-Z0-9]{1,20}@sunypoly.edu$" oninvalid="this.setCustomValidity(\'Please enter a valid SUNY Poly email\')" onchange="try{setCustomValidity(\'\')}catch(e){}" required>'
             );
+
             $("#teamMembers").append(newInput);
           }
           if (inputs.length === 3) {

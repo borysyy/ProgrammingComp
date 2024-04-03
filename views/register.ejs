@@ -3,46 +3,53 @@
   <head>
     <title>Register</title>
     <link href="./css/styles.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   </head>
   <body data-bs-theme="dark">
     <div class="bg-primary">
       <div class="container-fluid">
         <div class="row">
-          <div class="col-6">
-            <h1 class="display-4">SUNY Poly Programming Comp</h1>
+          <div class="col-8">
+            <h1 class="display-4">SUNY Poly Programming Competition</h1>
           </div>
         </div>
       </div>
     </div>
-    <div class="container text-center">
+
+    <div
+      class="d-flex flex-column align-items-center justify-content-center pt-5"
+    >
       <h1>Create Account</h1>
       <form
-        class="d-flex flex-column justify-contents-center align-items-center"
+        class="d-flex flex-column justify-content-center align-items-center"
         action="/register"
         method="post"
       >
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="email"
             name="email"
             placeholder="SUNY Poly Email"
             id="email"
             class="form-control"
-            pattern="^[a-zA-Z]{1,10}@sunypoly.edu$"
+            pattern="^[a-zA-Z0-9]{1,20}@sunypoly.edu$"
+            oninvalid="this.setCustomValidity('Please enter a valid SUNY Poly email')"
+            onchange="try{setCustomValidity('')}catch(e){}"
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="text"
             name="username"
-            placeholder="Username"
+            placeholder="SUNY Poly Username"
             id="username"
             class="form-control"
+            readonly
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="password"
             name="password"
@@ -50,10 +57,12 @@
             id="password"
             class="form-control"
             pattern="[a-zA-Z0-9]{8,10}"
+            oninvalid="this.setCustomValidity('Password must be 8-10 characters long made up with uppercase, lowercase and numbers')"
+            onchange="try{setCustomValidity('')}catch(e){}"
             required
           />
         </div>
-        <div class="input-group mb-3" style="width: 33%">
+        <div class="input-group mb-3">
           <input
             type="password"
             name="password_confirm"
@@ -80,5 +89,10 @@
         </div>
       </div>
     </div>
+    <script>
+      $("#email").on("input", function () {
+        $("#username").val($(this).val().split("@")[0]);
+      });
+    </script>
   </body>
 </html>
