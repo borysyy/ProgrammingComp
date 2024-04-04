@@ -140,22 +140,6 @@ app.get(
     res.redirect("/login");
   },
   async (req, res) => {
-    // Check if user is in a team
-    SPCP.getTeam(req.user.email, req.params.semester, req.params.year)
-      .then((team) => {
-        if (team) {
-          // User is in a team, proceed to next middleware
-          return next();
-        } else {
-          // User is not in a team, redirect to some other page
-          req.flash("error", "Please register for a team first");
-          return res.redirect("/");
-        }
-      })
-      .catch((error) => {
-        console.error("Error checking team membership:", error);
-      });
-
     const team = await SPCP.getTeam(
       req.user.email,
       req.params.semester,
@@ -483,27 +467,23 @@ codeQueue.process(async (job, done) => {
       .catch((err) => console.error("Error creating the container:", err));
     //
     console.log("Container created:", container.id);
-  } catch (err) {
-    console.log("Could not create container: ", err);
-    return done(err);
-  }
-
-  // Start the container
-  try {
     await container
       .start()
       .catch((err) => console.error("Error starting the container:", err));
 
     // Stop and remove the container after execution
     const containerData = await container.inspect();
+
     if (containerData.State.Running) {
       await container.stop();
     }
     await container.remove();
   } catch (err) {
-    console.log("Could not start container: ", err);
+    console.log("Could not create container: ", err);
     return done(err);
   }
+
+  // Start the container
 
   // Read output file and send data as response
   try {
