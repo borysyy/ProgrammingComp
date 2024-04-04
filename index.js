@@ -140,16 +140,34 @@ app.get(
     res.redirect("/login");
   },
   async (req, res) => {
+    // Check if user is in a team
+    SPCP.getTeam(req.user.email, req.params.semester, req.params.year)
+      .then((team) => {
+        if (team) {
+          // User is in a team, proceed to next middleware
+          return next();
+        } else {
+          // User is not in a team, redirect to some other page
+          req.flash("error", "Please register for a team first");
+          return res.redirect("/");
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking team membership:", error);
+      });
+
     const team = await SPCP.getTeam(
       req.user.email,
       req.params.semester,
       req.params.year
     );
+
     const submissions = await SPCP.getSubmission(
       req.params.semester,
       req.params.year,
       team.teamname
     );
+
     for (const submission of submissions) {
       const year = req.params.year;
       const semester = req.params.semester;
@@ -181,13 +199,33 @@ app.get(
 );
 
 // Route for the problems page
+// Route for the problems page
 app.get(
   "/problems/:semester/:year",
   (req, res, next) => {
-    if (req.isAuthenticated()) return next();
-    res.redirect("/login");
+    // Check if user is authenticated
+    if (!req.isAuthenticated()) {
+      return res.redirect("/login"); // Redirect to login if not authenticated
+    }
+
+    // Check if user is in a team
+    SPCP.getTeam(req.user.email, req.params.semester, req.params.year)
+      .then((team) => {
+        if (team) {
+          // User is in a team, proceed to next middleware
+          return next();
+        } else {
+          // User is not in a team, redirect to some other page
+          req.flash("error", "Please register for a team first");
+          return res.redirect("/");
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking team membership:", error);
+      });
   },
   async (req, res) => {
+    // If control reaches here, user is in a team
     const problems = await SPCP.getProblems(
       req.params.semester,
       req.params.year
@@ -413,7 +451,7 @@ app.post("/submit", upload.single("file"), async (req, res) => {
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
   let score = await SPCP.getScore(teamname, semester, year);
   let judge = Math.floor(Math.random() * 100); //get score from judge
-  if (score < judge){
+  if (score < judge) {
     await updateScore(teamname, semester, year);
   }
 
@@ -427,43 +465,42 @@ codeQueue.process(async (job, done) => {
   const { command, outputDirectory } = job.data;
 
   // Create a Docker container
-  try{
-  const container = await docker
-    .createContainer({
-      Image: "code-execute",
-      Cmd: command,
-      AttachStdout: true,
-      AttachStderr: true,
-      Detach: true,
-      HostConfig: {
-        Binds: [
-          `${codeExecutionDir}/submissions:/submissions`,
-          `${outputDirectory}:/output`,
-        ],
-      },
-    })
-    .catch((err) => console.error("Error creating the container:", err));
-//
-   console.log("Container created:", container.id)
+  try {
+    const container = await docker
+      .createContainer({
+        Image: "code-execute",
+        Cmd: command,
+        AttachStdout: true,
+        AttachStderr: true,
+        Detach: true,
+        HostConfig: {
+          Binds: [
+            `${codeExecutionDir}/submissions:/submissions`,
+            `${outputDirectory}:/output`,
+          ],
+        },
+      })
+      .catch((err) => console.error("Error creating the container:", err));
+    //
+    console.log("Container created:", container.id);
   } catch (err) {
     console.log("Could not create container: ", err);
     return done(err);
   }
 
   // Start the container
-  try{
-  await container
-    .start()
-    .catch((err) => console.error("Error starting the container:", err));
+  try {
+    await container
+      .start()
+      .catch((err) => console.error("Error starting the container:", err));
 
-  // Stop and remove the container after execution
-  const containerData = await container.inspect();
-  if (containerData.State.Running) {
-    await container.stop();
-  }
-  await container.remove();
-  }
-  catch (err){
+    // Stop and remove the container after execution
+    const containerData = await container.inspect();
+    if (containerData.State.Running) {
+      await container.stop();
+    }
+    await container.remove();
+  } catch (err) {
     console.log("Could not start container: ", err);
     return done(err);
   }
