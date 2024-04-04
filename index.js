@@ -467,23 +467,27 @@ codeQueue.process(async (job, done) => {
       .catch((err) => console.error("Error creating the container:", err));
     //
     console.log("Container created:", container.id);
-    await container
-      .start()
-      .catch((err) => console.error("Error starting the container:", err));
 
-    // Stop and remove the container after execution
-    const containerData = await container.inspect();
+    // Start the container
+    try {
+      await container
+        .start()
+        .catch((err) => console.error("Error starting the container:", err));
 
-    if (containerData.State.Running) {
-      await container.stop();
+      // Stop and remove the container after execution
+      const containerData = await container.inspect();
+      if (containerData.State.Running) {
+        await container.stop();
+      }
+      await container.remove();
+    } catch (err) {
+      console.log("Could not start container: ", err);
+      return done(err);
     }
-    await container.remove();
   } catch (err) {
     console.log("Could not create container: ", err);
     return done(err);
   }
-
-  // Start the container
 
   // Read output file and send data as response
   try {
