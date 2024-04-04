@@ -447,6 +447,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   const semester = req.body.semester;
   const year = req.body.year;
   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
+  const score = (await SPCP.getTeam(email, semester, year)).score;
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
 
@@ -477,6 +478,10 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   }
   
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
+  const judge = Math.floor(Math.random() * 100); //get score from judge
+  if (score < judge) {
+     await SPCP.updateScore(teamname, semester, year, judge);
+  }
 
   res.sendStatus(200);
 });
