@@ -404,12 +404,50 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Handle POST request to '/submit' endpoint
-app.post("/submit", upload.single("file"), async (req, res) => {
+// app.post("/submit", upload.single("file"), async (req, res) => {
+//   const email = req.user.email;
+//   const username = req.user.username;
+//   const semester = req.body.semester;
+//   const year = req.body.year;
+//   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
+//   const problems = JSON.parse(req.body.problems);
+//   const problem_name = problems[req.body.index].problem_name;
+
+//   const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
+
+//   // Create user-specific directories
+//   try {
+//     if (!fs.existsSync(outputDirectory)) {
+//       fs.mkdirSync(outputDirectory, { recursive: true });
+//     }
+//   } catch (err) {
+//     console.error(err);
+//   }
+//   if (req.file) {
+//     const sourceCodeFile = `/submissions/${req.user.username}/${req.file.originalname}`;
+//     const command = ["/entrypoint.sh", sourceCodeFile];
+//     // Add a job to the queue
+//     codeQueue.add({
+//       command,
+//       outputDirectory,
+//     });
+//   }
+//   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
+//   let score = await SPCP.getScore(teamname, semester, year);
+//   let judge = Math.floor(Math.random() * 100); //get score from judge
+//   if (score < judge) {
+//     await updateScore(teamname, semester, year);
+//   }
+
+//   res.sendStatus(200);
+// });
+app.post("/submit", upload.array("file"), async (req, res) => {
   const email = req.user.email;
   const username = req.user.username;
   const semester = req.body.semester;
   const year = req.body.year;
   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
+  const score = (await SPCP.getTeam(email, semester, year)).score;
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
 
@@ -423,20 +461,26 @@ app.post("/submit", upload.single("file"), async (req, res) => {
   } catch (err) {
     console.error(err);
   }
-  if (req.file) {
-    const sourceCodeFile = `/submissions/${req.user.username}/${req.file.originalname}`;
-    const command = ["/entrypoint.sh", sourceCodeFile];
-    // Add a job to the queue
-    codeQueue.add({
-      command,
-      outputDirectory,
+
+  console.log("req.file = ", req.files)
+  
+  if (req.files) {
+    req.files.forEach(file => {
+      // const sourceCodeFile = `/submissions/${req.user.username}/${file.originalname}`;
+      const sourceCodeFile = req.files.map(file => `/submissions/${req.user.username}/${file.originalname}`);
+      const command = ["/entrypoint.sh", ...sourceCodeFile];
+      // Add a job to the queue
+      codeQueue.add({
+        command,
+        outputDirectory,
+      });
     });
   }
+  
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
-  let score = await SPCP.getScore(teamname, semester, year);
-  let judge = Math.floor(Math.random() * 100); //get score from judge
+  const judge = Math.floor(Math.random() * 100); //get score from judge
   if (score < judge) {
-    await updateScore(teamname, semester, year);
+     await SPCP.updateScore(teamname, semester, year, judge);
   }
 
   res.sendStatus(200);

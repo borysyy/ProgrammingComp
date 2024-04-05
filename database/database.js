@@ -239,7 +239,7 @@ function updateScore(teamname, semester, year, score){
         } else {
           return db.run(
             "UPDATE teams SET score = ? WHERE competition_ID = ? AND teamname = ?",
-            [result.ID, teamname],
+            [score, result.ID, teamname],
             (err, result) => {
               if (err) {
                 return reject(err.message);
@@ -264,4 +264,5 @@ module.exports = {
   recordSubmission,
   getSubmission,
   getScore,
+  updateScore,
 };

@@ -67,7 +67,7 @@
                   </a>
                 </td>
                 <td>
-                  <input type="file" name="file" class="form-control" />
+                  <input type="file" name="file" class="form-control" multiple/>
                 </td>
                 <td>
                   <button class="btn btn-primary">Submit</button>
@@ -84,7 +84,7 @@
       </div>
     </div>
 
-    <script>
+    <!-- <script>
       $("button").on("click", async function () {
         const index = $(this).parent().parent().data("index");
         const file = $("input")[index].files[0];
@@ -148,6 +148,74 @@
 
         }
       });
-    </script>
+    </script> -->
+    <script>
+      $("button").on("click", async function () {
+        const index = $(this).parent().parent().data("index");
+        const files = $("input")[index].files;
+        if (files.length > 0) {
+          const data = new FormData();
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            data.append("file", file);
+          }
+    
+          const user = "<%= user %>";
+          data.append("user", user);
+    
+          const pathname = window.location.pathname.split("/");
+          const semester = pathname[2];
+          const year = pathname[3];
+    
+          data.append("semester", semester);
+          data.append("year", year);
+    
+          const problems = <%- JSON.stringify(problems) %>;
+    
+          data.append("problems", JSON.stringify(problems));
+    
+          data.append("index", index);
+    
+          const status = (
+            await fetch("/submit", {
+              method: "POST",
+              body: data,
+            })
+          ).status;
+    
+          if (status == 200) {
+            $("#messages").html(
+            `
+            <div
+                class="alert alert-success"
+                role="alert"
+    
+              >Uploaded successfully</div>
+            `);
+    
+          } else {
+            $("#messages").html(
+              `
+              <div
+                  class="alert alert-danger"
+                  role="alert"
+    
+                >Uploaded failed</div>
+              `);
+    
+          }
+        } else {
+          $("#messages").html(
+            `
+            <div
+                class="alert alert-danger"
+                role="alert"
+    
+              >No file uploaded</div>
+            `);
+    
+        }
+      });
+    </script>    
   </body>
 </html>
