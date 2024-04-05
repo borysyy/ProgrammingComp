@@ -183,7 +183,6 @@ app.get(
 );
 
 // Route for the problems page
-// Route for the problems page
 app.get(
   "/problems/:semester/:year",
   (req, res, next) => {
@@ -199,7 +198,6 @@ app.get(
           // User is in a team, proceed to next middleware
           return next();
         } else {
-          // User is not in a team, redirect to some other page
           req.flash("error", "Please register for a team first");
           return res.redirect("/");
         }
@@ -249,8 +247,10 @@ app.get(
 // Route for registering users
 app.post("/register", async (req, res) => {
   const { email, username, password, password_confirm } = req.body;
-  const emailExpression = new RegExp("^[a-zA-Z0-9]{1,20}@sunypoly.edu$");
-  const passwordExpression = new RegExp("[a-zA-Z0-9]{8,10}");
+  const emailExpression = new RegExp("^[a-zA-Z0-9]{1,}@sunypoly.edu$");
+  const passwordExpression = new RegExp(
+    "^(?=.*[a-z])(?=.*[A-Z])(?=.*d)[a-zA-Zd]{8,}$"
+  );
   let index = email.indexOf("@");
   let allowedUsername = 0;
 
@@ -274,7 +274,7 @@ app.post("/register", async (req, res) => {
   if (passwordExpression.test(password) === false) {
     req.flash(
       "error",
-      "Password must be 8-10 characters long made up with uppercase, lowercase and numbers"
+      "Minimum eight characters, at least one uppercase letter, one lowercase letter and one number"
     );
     return res.redirect("/register");
   }
@@ -403,44 +403,6 @@ const storage = multer.diskStorage({
 // Set up multer middleware for file uploads
 const upload = multer({ storage: storage });
 
-// Handle POST request to '/submit' endpoint
-// app.post("/submit", upload.single("file"), async (req, res) => {
-//   const email = req.user.email;
-//   const username = req.user.username;
-//   const semester = req.body.semester;
-//   const year = req.body.year;
-//   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
-//   const problems = JSON.parse(req.body.problems);
-//   const problem_name = problems[req.body.index].problem_name;
-
-//   const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
-
-//   // Create user-specific directories
-//   try {
-//     if (!fs.existsSync(outputDirectory)) {
-//       fs.mkdirSync(outputDirectory, { recursive: true });
-//     }
-//   } catch (err) {
-//     console.error(err);
-//   }
-//   if (req.file) {
-//     const sourceCodeFile = `/submissions/${req.user.username}/${req.file.originalname}`;
-//     const command = ["/entrypoint.sh", sourceCodeFile];
-//     // Add a job to the queue
-//     codeQueue.add({
-//       command,
-//       outputDirectory,
-//     });
-//   }
-//   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
-//   let score = await SPCP.getScore(teamname, semester, year);
-//   let judge = Math.floor(Math.random() * 100); //get score from judge
-//   if (score < judge) {
-//     await updateScore(teamname, semester, year);
-//   }
-
-//   res.sendStatus(200);
-// });
 app.post("/submit", upload.array("file"), async (req, res) => {
   const email = req.user.email;
   const username = req.user.username;
@@ -462,12 +424,14 @@ app.post("/submit", upload.array("file"), async (req, res) => {
     console.error(err);
   }
 
-  console.log("req.file = ", req.files)
-  
+  console.log("req.file = ", req.files);
+
   if (req.files) {
-    req.files.forEach(file => {
+    req.files.forEach((file) => {
       // const sourceCodeFile = `/submissions/${req.user.username}/${file.originalname}`;
-      const sourceCodeFile = req.files.map(file => `/submissions/${req.user.username}/${file.originalname}`);
+      const sourceCodeFile = req.files.map(
+        (file) => `/submissions/${req.user.username}/${file.originalname}`
+      );
       const command = ["/entrypoint.sh", ...sourceCodeFile];
       // Add a job to the queue
       codeQueue.add({
@@ -476,11 +440,11 @@ app.post("/submit", upload.array("file"), async (req, res) => {
       });
     });
   }
-  
+
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
   const judge = Math.floor(Math.random() * 100); //get score from judge
   if (score < judge) {
-     await SPCP.updateScore(teamname, semester, year, judge);
+    await SPCP.updateScore(teamname, semester, year, judge);
   }
 
   res.sendStatus(200);
