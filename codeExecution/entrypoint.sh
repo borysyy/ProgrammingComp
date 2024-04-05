@@ -85,7 +85,7 @@ if [ "${#file_array[@]}" -eq 1 ]; then
             fi
         }
     else
-        echo "Unsupported file type. Please provide a .cpp, .c, .py, or a .java file." > /output/program_errors.txt
+        echo "Unsupported file type. Please provide a .cpp, .c, .py, or a .java file." > $program_output
     fi
 elif [ "${#file_array[@]}" -gt 1 ]; then
     javac "${file_array[@]}" 2> $compiler_output
