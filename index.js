@@ -249,8 +249,9 @@ app.post("/register", async (req, res) => {
   const { email, username, password, password_confirm } = req.body;
   const emailExpression = new RegExp("^[a-zA-Z0-9]{1,}@sunypoly.edu$");
   const passwordExpression = new RegExp(
-    "^(?=.*[a-z])(?=.*[A-Z])(?=.*d)[a-zA-Zd]{8,}$"
+    "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$"
   );
+
   let index = email.indexOf("@");
   let allowedUsername = 0;
 
@@ -274,7 +275,7 @@ app.post("/register", async (req, res) => {
   if (passwordExpression.test(password) === false) {
     req.flash(
       "error",
-      "Minimum eight characters, at least one uppercase letter, one lowercase letter and one number"
+      "Password: Minimum eight characters, at least one uppercase letter, one lowercase letter and one number"
     );
     return res.redirect("/register");
   }

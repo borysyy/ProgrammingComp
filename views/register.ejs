@@ -56,7 +56,7 @@
             placeholder="Password"
             id="password"
             class="form-control"
-            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$"
+            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$"
             oninvalid="this.setCustomValidity('Minimum eight characters, at least one uppercase letter, one lowercase letter and one number')"
             onchange="try{setCustomValidity('')}catch(e){}"
             required
