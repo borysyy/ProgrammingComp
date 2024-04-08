@@ -106,7 +106,6 @@
 
       				reader.onload = function(event) {
       				const fileContent = event.target.result;
-      				//.log("unmodifiedContent", fileContent);
       				const modifiedContent = fileContent.replace(/\(\) \{/g, '(){');
       				MCarray.push(modifiedContent);
 
