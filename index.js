@@ -172,8 +172,14 @@ app.get(
           "utf-8"
         );
 
+        const scoreOutput = fs.readFileSync(
+          `${outputDirectory}/score_output.txt`,
+          "utf-8"
+        );
+
         submission.compilerOutput = compilerOutput;
         submission.programOutput = programOutput;
+        submission.scoreOutput = scoreOutput;
       } catch (err) {
         console.error("Error reading the file:", err);
       }
@@ -414,6 +420,15 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
 
+  const judgingDirectory = `/judgeProgs`;
+  const judging_program = `${judgingDirectory}/${
+    problems[req.body.index].judge
+  }.py`;
+  const testFilesDirectory = `/testFiles`;
+  const test_file = `${testFilesDirectory}/${
+    problems[req.body.index].test_file
+  }.dat`;
+
   const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
 
   // Create user-specific directories
@@ -433,7 +448,14 @@ app.post("/submit", upload.array("file"), async (req, res) => {
       const sourceCodeFile = req.files.map(
         (file) => `/submissions/${req.user.username}/${file.originalname}`
       );
-      const command = ["/entrypoint.sh", ...sourceCodeFile];
+      const command = [
+        "/entrypoint.sh",
+        ...sourceCodeFile,
+        judging_program,
+        test_file,
+      ];
+
+      console.log(command);
       // Add a job to the queue
       codeQueue.add({
         command,
@@ -455,7 +477,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
 codeQueue.process(async (job, done) => {
   console.log("Processing job:", job.id);
 
-  const { command, outputDirectory } = job.data;
+  const { command, outputDirectory, username } = job.data;
 
   // Create a Docker container
   try {
@@ -470,6 +492,8 @@ codeQueue.process(async (job, done) => {
           Binds: [
             `${codeExecutionDir}/submissions:/submissions`,
             `${outputDirectory}:/output`,
+            `${codeExecutionDir}/judgeProgs:/judgeProgs`,
+            `${codeExecutionDir}/testFiles:/testFiles`,
           ],
         },
       })

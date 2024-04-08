@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -eq 0 ]; then
-    echo "Usage: <source_code_file(s)>"
+    echo "Usage: <source_code_file(s)>, <judging_prog>, <testing_file>"
     exit 1
 fi
 
@@ -13,6 +13,7 @@ done
 
 extension="${file_array[0]##*.}"
 
+
 # Create a unique output directory for each user
 output_directory="/output"
 
@@ -21,28 +22,43 @@ status="Success"
 
 program_output="${output_directory}/program_output.txt"
 compiler_output="${output_directory}/compiler_output.txt"
+score_output="${output_directory}/score_output.txt"
+
 
 echo $'\n' >$program_output
 echo $'\n' >$compiler_output
+echo $'\n' >$score_output
 
-if [ "${#file_array[@]}" -eq 1 ]; then
+judging_prog="${file_array[1]}"
+test_file="${file_array[2]}"
+
+
+if [ "${#file_array[@]}" -gt 1 ]; then
+
     if [ "$extension" = "cpp" ]; then
-        # Compile the program, with a 10 second limit, capturing compiler errors
-        timeout 10s g++ -o user_program "$filename" 2>$compiler_output || {
-            if [ -s $compiler_output ]; then
-                status="An error as occurred"
-            else
-                status="Compilation took longer than 10 seconds"
-            fi
-        }
-        # Run the program, with a 10 second limit, capturing stdout and stderr
-        timeout 10s ./user_program &>$program_output || {
-            if [ -s $program_output ]; then
-                status="An error as occurred"
-            else
-                status="Runtime took longer than 10 seconds"
-            fi
-        }
+        # # Compile the program, with a 10 second limit, capturing compiler errors
+        # timeout 10s g++ -o user_program "$filename" 2>$compiler_output || {
+        #     if [ -s $compiler_output ]; then
+        #         status="An error as occurred"
+        #     else
+        #         status="Compilation took longer than 10 seconds"
+        #     fi
+        # }
+        # # Run the program, with a 10 second limit, capturing stdout and stderr
+        # timeout 10s ./user_program $test_file  &>$program_output || {
+        #     if [ -s $program_output ]; then
+        #         status="An error as occurred"
+        #     else
+        #         status="Runtime took longer than 10 seconds"
+        #     fi
+        # }
+
+        g++ -o user_program "${file_array[0]}" 2>$compiler_output
+
+        ./user_program < "$test_file" &>$program_output
+
+        python3 "$judging_prog" "$test_file" ./user_program &>$score_output
+
     elif [ "$extension" = "c" ]; then
         # Compile the program, with a 10 second limit, capturing compiler errors
         timeout 10s gcc -o user_program "$filename" 2>$compiler_output || {
