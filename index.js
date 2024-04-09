@@ -455,7 +455,6 @@ app.post("/submit", upload.array("file"), async (req, res) => {
         test_file,
       ];
 
-      console.log(command);
       // Add a job to the queue
       codeQueue.add({
         command,
@@ -463,8 +462,23 @@ app.post("/submit", upload.array("file"), async (req, res) => {
       });
     });
   }
+  const scoreOutput = fs.readFile(
+    `${outputDirectory}/score_output.txt`,
+    "utf-8",
+    (err, data) => {
+      console.log(data);
+    }
+  );
 
-  await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
+  await SPCP.recordSubmission(
+    semester,
+    year,
+    username,
+    teamname,
+    problem_name,
+    scoreOutput
+  );
+
   const judge = Math.floor(Math.random() * 100); //get score from judge
   if (score < judge) {
     await SPCP.updateScore(teamname, semester, year, judge);
@@ -477,7 +491,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
 codeQueue.process(async (job, done) => {
   console.log("Processing job:", job.id);
 
-  const { command, outputDirectory, username } = job.data;
+  const { command, outputDirectory } = job.data;
 
   // Create a Docker container
   try {

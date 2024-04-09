@@ -136,7 +136,14 @@ function getProblems(semester, year) {
   });
 }
 
-function recordSubmission(semester, year, username, teamname, problem_name) {
+function recordSubmission(
+  semester,
+  year,
+  username,
+  teamname,
+  problem_name,
+  score
+) {
   return new Promise((resolve, reject) => {
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
@@ -166,7 +173,17 @@ function recordSubmission(semester, year, username, teamname, problem_name) {
                     }
                   );
                 } else {
-                  resolve({ success: true });
+                  return db.run(
+                    "UPDATE submissions SET score = ? WHERE competition_ID = ? AND teamname = ? AND username = ? AND problem_name = ?;",
+                    [score, competition_ID, teamname, username, problem_name],
+                    (error) => {
+                      if (error) {
+                        reject(error); // Reject if there's an error during insertion
+                      } else {
+                        resolve({ success: true });
+                      }
+                    }
+                  );
                 }
               }
             }
