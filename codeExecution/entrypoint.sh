@@ -35,7 +35,7 @@ judging_prog="${@: -2:1}"
 test_file="${@: -1}"
 
 # Compile and run the compiled languages
-runCompiledCode() {
+compile_run_code() {
     # Get the compiler
     compiler="$1"
 
@@ -62,7 +62,7 @@ runCompiledCode() {
 }
 
 # Run the interpreted languages
-runInterpretedCode() {
+run_interpreted_code() {
     # Get the interpreter
     interpreter="$1"
 
@@ -85,37 +85,38 @@ if [ "${#file_array[@]}" -eq 1 ]; then
 
     # Run C++
     if [ "$extension" = "cpp" ]; then
+    
         compiler="g++"
 
-        runCompiledCode "$compiler"
+        compile_run_code "$compiler"
     
     # Run C
     elif [ "$extension" = "c" ]; then
 
         compiler="gcc"
         
-        runCompiledCode "$compiler"
+        compile_run_code "$compiler"
          
     # Run Python
     elif [ "$extension" = "py" ]; then
 
         interpreter="python3"
 
-        runInterpretedCode "$interpreter"
+        run_interpreted_code "$interpreter"
 
     # Run Java
     elif [ "$extension" = "java" ]; then
 
         interpreter="java"
 
-        runInterpretedCode "$interpreter"
+        run_interpreted_code "$interpreter"
 
     # Run JavaScript
     elif [ "$extension" = "js" ]; then
 
         interpreter="node"
 
-        runInterpretedCode "$interpreter"
+        run_interpreted_code "$interpreter"
 
     else
         echo "Unsupported file type. Please provide a .cpp, .c, .py, or a .java file." > $program_output
