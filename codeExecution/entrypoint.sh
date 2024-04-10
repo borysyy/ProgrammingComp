@@ -8,6 +8,7 @@ fi
 
 declare -a file_array=()
 
+# Get all of the program files 
 for ((i = 1; i <= $# - 2; i++)); do
     filename=${!i}  # Get the argument at index i
     file_array+=("$filename")  # Add the argument to the array
@@ -18,9 +19,7 @@ extension="${file_array[0]##*.}"
 # Create a unique output directory for each user
 output_directory="/output"
 
-# Set default status to success
-status="Success"
-
+# Set up all of the text files
 program_output="${output_directory}/program_output.txt"
 compiler_output="${output_directory}/compiler_output.txt"
 score_output="${output_directory}/score_output.txt"
@@ -30,98 +29,94 @@ echo $'\n' >$program_output
 echo $'\n' >$compiler_output
 echo $'\n' >$score_output
 
+# Get the judging program from the 2nd to last arg.
 judging_prog="${@: -2:1}"
+# Get the test file from the last arg. 
 test_file="${@: -1}"
 
+# Run the compiled languages
+runCompiledCode() {
+    # Set the runtime limit to 60 seconds
+    runtime=`timeout 60s ./user_program < "$test_file"`
+    runtime_status=$?
+    # If the exit status is 124 then notify user 
+    if [ $runtime_status -eq 124 ]; then
+    echo "Runtime took longer than 60s" > "$program_output"
+    else
+        # Send the output of the code to the program_output file
+        echo "$runtime" &> "$program_output"
+        # Judge the code with the test file and user program
+        python3 "$judging_prog" "$test_file" ./user_program 1> $score_output
+    fi
+}
+
+# Run the interpreted languages
+runInterpretedCode() {
+    # Get the interpreter
+    interpreter="$1"
+
+    # Set the runtime limit to 60 seconds
+    runtime=`timeout 10s "$interpreter" "${file_array[0]}" < "$test_file"`
+    # If the exit status is 124 then notify user 
+    runtime_status=$?
+    if [ $runtime_status -eq 124 ]; then
+    echo "Runtime took longer than 10s" > "$program_output"
+    else
+        # Send the output of the code to the program_output file
+        echo "$runtime" &> "$program_output"
+        # Judge the code with the test file and user program
+        python3 "$judging_prog" "$test_file" "$interpreter" "${file_array[0]}" &>$score_output
+    fi
+  
+}
 
 if [ "${#file_array[@]}" -eq 1 ]; then
 
+    # Run C++
     if [ "$extension" = "cpp" ]; then
-        # # Compile the program, with a 10 second limit, capturing compiler errors
-        # timeout 10s g++ -o user_program "$filename" 2>$compiler_output || {
-        #     if [ -s $compiler_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Compilation took longer than 10 seconds"
-        #     fi
-        # }
-        # # Run the program, with a 10 second limit, capturing stdout and stderr
-        # timeout 10s ./user_program $test_file  &>$program_output || {
-        #     if [ -s $program_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Runtime took longer than 10 seconds"
-        #     fi
-        # }
+        # Compile the program, with a 10 second limit, capturing compiler errors
+        timeout 10s g++ -o user_program "${file_array[0]}" 2>$compiler_output 
 
-        g++ -o user_program "${file_array[0]}" 2>$compiler_output
+        if [ -s $compiler_output ]; then
+            status="An error has occurred:" 
+            sed -i -e "1i$status\ " "$compiler_output"
+        fi
 
-        ./user_program < "$test_file" &>$program_output
-
-        python3 "$judging_prog" "$test_file" ./user_program &>$score_output
-
+        runCompiledCode
+    
+    # Run C
     elif [ "$extension" = "c" ]; then
-        # # Compile the program, with a 10 second limit, capturing compiler errors
-        # timeout 10s gcc -o user_program "$filename" 2>$compiler_output || {
-        #     if [ -s $compiler_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Compilation took longer than 10 seconds"
-        #     fi
-        # }
-        # # Run the program, with a 10 second limit, capturing stdout and stdin
-        # timeout 10s ./user_program &>$program_output || {
-        #     if [ -s $program_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Runtime took longer than 10 seconds"
-        #     fi
-        # }
+        # Compile the program, with a 10 second limit, capturing compiler errors
+        timeout 10s gcc -o user_program "${file_array[0]}" 2>$compiler_output
 
-          gcc -o user_program "${file_array[0]}" 2>$compiler_output
-
-        ./user_program < "$test_file" &>$program_output
-
-        python3 "$judging_prog" "$test_file" ./user_program &>$score_output
-
-    elif [ "$extension" = "py" ]; then
-        # timeout 10s python3 "$filename" &>$program_output || {
-        #     if [ -s $program_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Runtime took longer than 10 seconds"
-        #     fi
-        # }
-            python3 "${file_array[0]}" < "$test_file" &>$program_output
-
-            python3 "$judging_prog" "$test_file" python3 "${file_array[0]}" &>$score_output
-
-    elif [ "$extension" = "java" ]; then
-        # timeout 10s java "$filename" &>$program_output || {
-        #     if [ -s $program_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Runtime took longer than 10 seconds"
-        #     fi
-        # }
-
-        java "${file_array[0]}" < "$test_file" $>$program_output
-
-        python3 "$judging_prog" "$test_file" java "${file_array[0]}" &>$score_output
-
+        if [ -s $compiler_output ]; then
+            status="An error has occurred:" 
+            sed -i -e "1i$status\ " "$compiler_output"
+        fi
         
+        runCompiledCode
+         
+    # Run Python
+    elif [ "$extension" = "py" ]; then
+
+        interpreter="python3"
+
+        runInterpretedCode "$interpreter"
+
+    # Run Java
+    elif [ "$extension" = "java" ]; then
+
+        interpreter="java"
+
+        runInterpretedCode "$interpreter"
+
+    # Run JavaScript
     elif [ "$extension" = "js" ]; then
-        # timeout 10s node "$filename" &>$program_output || {
-        #     if [ -s $program_output ]; then
-        #         status="An error as occurred"
-        #     else
-        #         status="Runtime took longer than 10 seconds"
-        #     fi
-        # }
 
-        node "${file_array[0]}" < "$test_file" $>$program_output
+        interpreter="node"
 
-        python3 "$judging_prog" "$test_file" node "${file_array[0]}" &>$score_output
+        runInterpretedCode "$interpreter"
+
     else
         echo "Unsupported file type. Please provide a .cpp, .c, .py, or a .java file." > $program_output
     fi

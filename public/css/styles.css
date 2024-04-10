@@ -16463,4 +16463,7 @@ textarea.form-control-lg {
 .bi-vignette::before {
   content: "賈"; }
 
+pre {
+  white-space: pre-wrap; }
+
 /*# sourceMappingURL=styles.css.map */

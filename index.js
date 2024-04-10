@@ -527,11 +527,8 @@ codeQueue.process(async (job, done) => {
         .start()
         .catch((err) => console.error("Error starting the container:", err));
 
-      // Stop and remove the container after execution
-      const containerData = await container.inspect();
-      if (containerData.State.Running) {
-        await container.stop();
-      }
+      await container.wait();
+
       await container.remove();
 
       const scoreOutput = fs.readFileSync(
