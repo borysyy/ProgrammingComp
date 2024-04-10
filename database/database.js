@@ -271,6 +271,33 @@ function updateScore(teamname, semester, year, score) {
   });
 }
 
+function getHighestScoreForProblem(semester, year, teamname, problemname){
+return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.get(
+            "SELECT MAX(score) AS score FROM submissions WHERE competition_ID = ? AND teamname = ? AND problem_name = ?;",
+            [result.ID, teamname, problemname],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              }
+   			    console.log(result.score);
+              	return resolve(result.score);
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
+
 module.exports = {
   router,
   createUser,
@@ -282,4 +309,5 @@ module.exports = {
   getSubmission,
   getScore,
   updateScore,
+  getHighestScoreForProblem,
 };
