@@ -56,7 +56,7 @@ runInterpretedCode() {
     interpreter="$1"
 
     # Set the runtime limit to 60 seconds
-    runtime=`timeout 10s "$interpreter" "${file_array[0]}" < "$test_file"`
+    runtime=`timeout 60s "$interpreter" "${file_array[0]}" < "$test_file"`
     # If the exit status is 124 then notify user 
     runtime_status=$?
     if [ $runtime_status -eq 124 ]; then
