@@ -423,10 +423,11 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   const semester = req.body.semester;
   const year = req.body.year;
   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
-  const score = (await SPCP.getTeam(email, semester, year)).score;
+  const TotalScore = (await SPCP.getTeam(email, semester, year)).score;
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
-
+  const numberOfProblems = Object.keys(problems).length;
+  let scores = 0;
   const judgingDirectory = `/judgeProgs`;
   const judging_program = `${judgingDirectory}/${
     problems[req.body.index].judge
@@ -449,34 +450,39 @@ app.post("/submit", upload.array("file"), async (req, res) => {
 
   console.log("req.file = ", req.files);
 
-  if (req.files) {
-    req.files.forEach((file) => {
-      // const sourceCodeFile = `/submissions/${req.user.username}/${file.originalname}`;
-      const sourceCodeFile = req.files.map(
-        (file) => `/submissions/${req.user.username}/${file.originalname}`
-      );
-      const command = [
-        "/entrypoint.sh",
-        ...sourceCodeFile,
-        judging_program,
-        test_file,
-      ];
+  let filePaths = [];
 
-      // Add a job to the queue
-      codeQueue.add({
-        command,
-        outputDirectory,
-        semester,
-        year,
-        username,
-        teamname,
-        problem_name,
-      });
-    });
+  if (req.files) {
+    filePaths = req.files.map(
+      (file) => `/submissions/${req.user.username}/${file.originalname}`
+    );
   }
 
-  const judge = Math.floor(Math.random() * 100); //get score from judge
-  if (score < judge) {
+  const command = ["/entrypoint.sh", ...filePaths, judging_program, test_file];
+
+  codeQueue.add({
+    command,
+    outputDirectory,
+    semester,
+    year,
+    username,
+    teamname,
+    problem_name,
+  });
+
+  let judge = 0;
+  for (let i = 0; i < numberOfProblems; ++i) {
+    scores[i] = await SPCP.getHighestScoreForProblem(
+      semester,
+      year,
+      teamname,
+      problem_name
+    );
+    judge += scores[i];
+    console.log(i + ": " + JSON.stringify(scores[i]));
+  }
+
+  if (TotalScore < judge) {
     await SPCP.updateScore(teamname, semester, year, judge);
   }
 
