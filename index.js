@@ -426,21 +426,26 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   }
 
   console.log("req.file = ", req.files);
+  let filePaths = [];
 
   if (req.files) {
-    req.files.forEach((file) => {
-      // const sourceCodeFile = `/submissions/${req.user.username}/${file.originalname}`;
-      const sourceCodeFile = req.files.map(
-        (file) => `/submissions/${req.user.username}/${file.originalname}`
-      );
-      const command = ["/entrypoint.sh", ...sourceCodeFile];
-      // Add a job to the queue
-      codeQueue.add({
-        command,
-        outputDirectory,
-      });
-    });
+    filePaths = req.files.map(
+      (file) => `/submissions/${req.user.username}/${file.originalname}`
+    );
   }
+
+  //
+  const command = ["/entrypoint.sh", ...filePaths]; //, judging_program, test_file];
+
+  codeQueue.add({
+    command,
+    outputDirectory,
+    semester,
+    year,
+    username,
+    teamname,
+    problem_name,
+  });
 
   await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
   const judge = Math.floor(Math.random() * 100); //get score from judge
