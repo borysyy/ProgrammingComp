@@ -61,6 +61,13 @@ app.use(flash());
 
 app.use(bodyParser.json());
 
+async function clearQueue() {
+  await codeQueue.empty();
+  console.log("Queue cleared.");
+}
+
+clearQueue().catch(console.error);
+
 // Passport local strategy for authenticating users
 passport.use(
   new LocalStrategy(
@@ -459,25 +466,14 @@ app.post("/submit", upload.array("file"), async (req, res) => {
       codeQueue.add({
         command,
         outputDirectory,
+        semester,
+        year,
+        username,
+        teamname,
+        problem_name,
       });
     });
   }
-  const scoreOutput = fs.readFile(
-    `${outputDirectory}/score_output.txt`,
-    "utf-8",
-    (err, data) => {
-      console.log(data);
-    }
-  );
-
-  await SPCP.recordSubmission(
-    semester,
-    year,
-    username,
-    teamname,
-    problem_name,
-    scoreOutput
-  );
 
   const judge = Math.floor(Math.random() * 100); //get score from judge
   if (score < judge) {
@@ -489,9 +485,19 @@ app.post("/submit", upload.array("file"), async (req, res) => {
 
 // Process the jobs
 codeQueue.process(async (job, done) => {
+  // Register event listener for job completion
+
   console.log("Processing job:", job.id);
 
-  const { command, outputDirectory } = job.data;
+  const {
+    command,
+    outputDirectory,
+    semester,
+    year,
+    username,
+    teamname,
+    problem_name,
+  } = job.data;
 
   // Create a Docker container
   try {
@@ -527,6 +533,31 @@ codeQueue.process(async (job, done) => {
         await container.stop();
       }
       await container.remove();
+
+      const scoreOutput = fs.readFileSync(
+        `${outputDirectory}/score_output.txt`,
+        { encoding: "utf-8" }
+      );
+
+      console.log(
+        semester,
+        year,
+        username,
+        teamname,
+        problem_name,
+        scoreOutput
+      );
+
+      await SPCP.recordSubmission(
+        semester,
+        year,
+        username,
+        teamname,
+        problem_name,
+        scoreOutput
+      );
+
+      done();
     } catch (err) {
       console.log("Could not start container: ", err);
       return done(err);
@@ -535,20 +566,8 @@ codeQueue.process(async (job, done) => {
     console.log("Could not create container: ", err);
     return done(err);
   }
+});
 
-  // Read output file and send data as response
-  try {
-    const compilerOutput = fs.readFileSync(
-      `${outputDirectory}/compiler_output.txt`,
-      "utf-8"
-    );
-
-    const programOutput = fs.readFileSync(
-      `${outputDirectory}/program_output.txt`,
-      "utf-8"
-    );
-    done(null, { compilerOutput, programOutput });
-  } catch (err) {
-    console.error("Error reading the file:", err);
-  }
+codeQueue.on("completed", (job) => {
+  console.log(`Job with id ${job.id} has been completed`);
 });
