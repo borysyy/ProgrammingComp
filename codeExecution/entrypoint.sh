@@ -34,8 +34,19 @@ judging_prog="${@: -2:1}"
 # Get the test file from the last arg. 
 test_file="${@: -1}"
 
-# Run the compiled languages
+# Compile and run the compiled languages
 runCompiledCode() {
+    # Get the compiler
+    compiler="$1"
+
+    # Compile the program, with a 10 second limit, capturing compiler errors
+    timeout 10s "$compiler" -o user_program "${file_array[0]}" 2>$compiler_output 
+
+    if [ -s $compiler_output ]; then
+        status="An error has occurred:" 
+        sed -i -e "1i$status\ " "$compiler_output"
+    fi
+
     # Set the runtime limit to 60 seconds
     runtime=`timeout 60s ./user_program < "$test_file"`
     runtime_status=$?
@@ -74,27 +85,16 @@ if [ "${#file_array[@]}" -eq 1 ]; then
 
     # Run C++
     if [ "$extension" = "cpp" ]; then
-        # Compile the program, with a 10 second limit, capturing compiler errors
-        timeout 10s g++ -o user_program "${file_array[0]}" 2>$compiler_output 
+        compiler="g++"
 
-        if [ -s $compiler_output ]; then
-            status="An error has occurred:" 
-            sed -i -e "1i$status\ " "$compiler_output"
-        fi
-
-        runCompiledCode
+        runCompiledCode "$compiler"
     
     # Run C
     elif [ "$extension" = "c" ]; then
-        # Compile the program, with a 10 second limit, capturing compiler errors
-        timeout 10s gcc -o user_program "${file_array[0]}" 2>$compiler_output
 
-        if [ -s $compiler_output ]; then
-            status="An error has occurred:" 
-            sed -i -e "1i$status\ " "$compiler_output"
-        fi
+        compiler="gcc"
         
-        runCompiledCode
+        runCompiledCode "$compiler"
          
     # Run Python
     elif [ "$extension" = "py" ]; then
