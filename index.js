@@ -61,6 +61,13 @@ app.use(flash());
 
 app.use(bodyParser.json());
 
+async function clearQueue() {
+  await codeQueue.empty();
+  console.log("Queue cleared.");
+}
+
+clearQueue().catch(console.error);
+
 // Passport local strategy for authenticating users
 passport.use(
   new LocalStrategy(
@@ -172,8 +179,14 @@ app.get(
           "utf-8"
         );
 
+        const scoreOutput = fs.readFileSync(
+          `${outputDirectory}/score_output.txt`,
+          "utf-8"
+        );
+
         submission.compilerOutput = compilerOutput;
         submission.programOutput = programOutput;
+        submission.scoreOutput = scoreOutput;
       } catch (err) {
         console.error("Error reading the file:", err);
       }
@@ -410,9 +423,19 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   const semester = req.body.semester;
   const year = req.body.year;
   const teamname = (await SPCP.getTeam(email, semester, year)).teamname;
-  const score = (await SPCP.getTeam(email, semester, year)).score;
+  const TotalScore = (await SPCP.getTeam(email, semester, year)).score;
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
+  const numberOfProblems = Object.keys(problems).length;
+  let scores = 0;
+  const judgingDirectory = `/judgeProgs`;
+  const judging_program = `${judgingDirectory}/${
+    problems[req.body.index].judge
+  }.py`;
+  const testFilesDirectory = `/testFiles`;
+  const test_file = `${testFilesDirectory}/${
+    problems[req.body.index].test_file
+  }.dat`;
 
   const outputDirectory = `${codeExecutionDir}/output/${year}/${semester}/${problem_name}/${teamname}/${username}`;
 
@@ -426,6 +449,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   }
 
   console.log("req.file = ", req.files);
+
   let filePaths = [];
 
   if (req.files) {
@@ -434,8 +458,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
     );
   }
 
-  //
-  const command = ["/entrypoint.sh", ...filePaths]; //, judging_program, test_file];
+  const command = ["/entrypoint.sh", ...filePaths, judging_program, test_file];
 
   codeQueue.add({
     command,
@@ -447,9 +470,19 @@ app.post("/submit", upload.array("file"), async (req, res) => {
     problem_name,
   });
 
-  await SPCP.recordSubmission(semester, year, username, teamname, problem_name);
-  const judge = Math.floor(Math.random() * 100); //get score from judge
-  if (score < judge) {
+  let judge = 0;
+  for (let i = 0; i < numberOfProblems; ++i) {
+    scores[i] = await SPCP.getHighestScoreForProblem(
+      semester,
+      year,
+      teamname,
+      problem_name
+    );
+    judge += scores[i];
+    console.log(i + ": " + JSON.stringify(scores[i]));
+  }
+
+  if (TotalScore < judge) {
     await SPCP.updateScore(teamname, semester, year, judge);
   }
 
@@ -458,9 +491,19 @@ app.post("/submit", upload.array("file"), async (req, res) => {
 
 // Process the jobs
 codeQueue.process(async (job, done) => {
+  // Register event listener for job completion
+
   console.log("Processing job:", job.id);
 
-  const { command, outputDirectory } = job.data;
+  const {
+    command,
+    outputDirectory,
+    semester,
+    year,
+    username,
+    teamname,
+    problem_name,
+  } = job.data;
 
   // Create a Docker container
   try {
@@ -475,6 +518,8 @@ codeQueue.process(async (job, done) => {
           Binds: [
             `${codeExecutionDir}/submissions:/submissions`,
             `${outputDirectory}:/output`,
+            `${codeExecutionDir}/judgeProgs:/judgeProgs`,
+            `${codeExecutionDir}/testFiles:/testFiles`,
           ],
         },
       })
@@ -488,12 +533,34 @@ codeQueue.process(async (job, done) => {
         .start()
         .catch((err) => console.error("Error starting the container:", err));
 
-      // Stop and remove the container after execution
-      const containerData = await container.inspect();
-      if (containerData.State.Running) {
-        await container.stop();
-      }
+      await container.wait();
+
       await container.remove();
+
+      const scoreOutput = fs.readFileSync(
+        `${outputDirectory}/score_output.txt`,
+        { encoding: "utf-8" }
+      );
+
+      console.log(
+        semester,
+        year,
+        username,
+        teamname,
+        problem_name,
+        scoreOutput
+      );
+
+      await SPCP.recordSubmission(
+        semester,
+        year,
+        username,
+        teamname,
+        problem_name,
+        scoreOutput
+      );
+
+      done();
     } catch (err) {
       console.log("Could not start container: ", err);
       return done(err);
@@ -502,20 +569,8 @@ codeQueue.process(async (job, done) => {
     console.log("Could not create container: ", err);
     return done(err);
   }
+});
 
-  // Read output file and send data as response
-  try {
-    const compilerOutput = fs.readFileSync(
-      `${outputDirectory}/compiler_output.txt`,
-      "utf-8"
-    );
-
-    const programOutput = fs.readFileSync(
-      `${outputDirectory}/program_output.txt`,
-      "utf-8"
-    );
-    done(null, { compilerOutput, programOutput });
-  } catch (err) {
-    console.error("Error reading the file:", err);
-  }
+codeQueue.on("completed", (job) => {
+  console.log(`Job with id ${job.id} has been completed`);
 });

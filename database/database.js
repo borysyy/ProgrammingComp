@@ -121,7 +121,7 @@ function getProblems(semester, year) {
           reject(error); // Reject if there's an error during insertion
         } else {
           return db.all(
-            "SELECT problem_num, problem_name FROM problems WHERE competition_ID = ?;",
+            "SELECT problem_num, problem_name, judge, test_file FROM problems WHERE competition_ID = ?;",
             [result.ID],
             (err, result) => {
               if (err) {
@@ -136,7 +136,14 @@ function getProblems(semester, year) {
   });
 }
 
-function recordSubmission(semester, year, username, teamname, problem_name) {
+function recordSubmission(
+  semester,
+  year,
+  username,
+  teamname,
+  problem_name,
+  score
+) {
   return new Promise((resolve, reject) => {
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
@@ -155,8 +162,8 @@ function recordSubmission(semester, year, username, teamname, problem_name) {
               } else {
                 if (result.count == 0) {
                   return db.run(
-                    "INSERT INTO submissions VALUES (?,?,?,?)",
-                    [competition_ID, teamname, username, problem_name],
+                    "INSERT INTO submissions VALUES (?,?,?,?,?)",
+                    [competition_ID, teamname, username, problem_name, score],
                     (error) => {
                       if (error) {
                         reject(error); // Reject if there's an error during insertion
@@ -166,7 +173,17 @@ function recordSubmission(semester, year, username, teamname, problem_name) {
                     }
                   );
                 } else {
-                  resolve({ success: true });
+                  return db.run(
+                    "UPDATE submissions SET score = ? WHERE competition_ID = ? AND teamname = ? AND username = ? AND problem_name = ?;",
+                    [score, competition_ID, teamname, username, problem_name],
+                    (error) => {
+                      if (error) {
+                        reject(error); // Reject if there's an error during insertion
+                      } else {
+                        resolve({ success: true });
+                      }
+                    }
+                  );
                 }
               }
             }
@@ -202,7 +219,7 @@ function getSubmission(semester, year, teamname) {
   });
 }
 
-function getScore (teamname, semester, year){
+function getScore(teamname, semester, year) {
   return new Promise((resolve, reject) => {
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
@@ -218,7 +235,7 @@ function getScore (teamname, semester, year){
               if (err) {
                 return reject(err.message);
               } else {
-              return resolve(result);
+                return resolve(result);
               }
             }
           );
@@ -228,7 +245,7 @@ function getScore (teamname, semester, year){
   });
 }
 
-function updateScore(teamname, semester, year, score){
+function updateScore(teamname, semester, year, score) {
   return new Promise((resolve, reject) => {
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
@@ -244,7 +261,7 @@ function updateScore(teamname, semester, year, score){
               if (err) {
                 return reject(err.message);
               } else {
-                return resolve({success : true});
+                return resolve({ success: true });
               }
             }
           );
@@ -253,6 +270,33 @@ function updateScore(teamname, semester, year, score){
     );
   });
 }
+
+function getHighestScoreForProblem(semester, year, teamname, problemname){
+return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.get(
+            "SELECT MAX(score) AS score FROM submissions WHERE competition_ID = ? AND teamname = ? AND problem_name = ?;",
+            [result.ID, teamname, problemname],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              }
+   			    console.log(result.score);
+              	return resolve(result.score);
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
 
 module.exports = {
   router,
@@ -265,4 +309,5 @@ module.exports = {
   getSubmission,
   getScore,
   updateScore,
+  getHighestScoreForProblem,
 };

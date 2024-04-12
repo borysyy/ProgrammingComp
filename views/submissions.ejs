@@ -55,11 +55,15 @@
             <tbody>
               <% for (const submission of submissions) { %>
               <tr>
-                <td><%= submission.username %></td>
-                <td><%= submission.compilerOutput %></td>
-                <td><%= submission.programOutput %></td>
-                <td><%= 0 %></td>
-                <td><%= submission.problem_name %></td>
+                <td><pre><%= submission.username %></pre></td>
+                <td class="text-start">
+                  <pre><%= submission.compilerOutput %></pre>
+                </td>
+                <td class="text-start">
+                  <pre><%= submission.programOutput %></pre>
+                </td>
+                <td><pre><%= submission.scoreOutput %></pre></td>
+                <td><pre><%= submission.problem_name %></pre></td>
               </tr>
 
               <% } %>
