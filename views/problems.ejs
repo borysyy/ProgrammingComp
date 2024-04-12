@@ -89,70 +89,90 @@
       </div>
     </div>
     <script>
-         $("button").on("click", async function () {
+       $("button").on("click", async function () {
         const index = $(this).parent().parent().data("index");
         const files = $("input")[index].files;
         if (files.length > 0) {
           const data = new FormData();
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            data.append("file", file);
+          function readFileAndModifyContent(files) {
+            const promises = [];
+            const MCarray = [];
+            Array.from(files).forEach(file => {
+              promises.push(new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = function(event) {
+              const fileContent = event.target.result;
+              //.log("unmodifiedContent", fileContent);
+              const modifiedContent = fileContent.replace(/\(\) \{/g, '(){');
+              MCarray.push(modifiedContent);
+              resolve(modifiedContent);
+              };
+              reader.onerror = function(event) {
+              reject(event.target.error);
+              };
+              reader.readAsText(file);
+              }));
+            });
+            return new Promise((resolve, reject) => {
+              Promise.all(promises)
+              .then(() => {
+                resolve(MCarray);
+              })
+              .catch(error => {
+                reject(error);
+              });
+            });
           }
-
-          const user = "<%= user %>";
-          data.append("user", user);
-
-          const pathname = window.location.pathname.split("/");
-          const semester = pathname[2];
-          const year = pathname[3];
-
-          data.append("semester", semester);
-          data.append("year", year);
-
-          const problems = <%- JSON.stringify(problems) %>;
-
-          data.append("problems", JSON.stringify(problems));
-
-          data.append("index", index);
-
-          const status = (
-            await fetch("/submit", {
-              method: "POST",
-              body: data,
-            })
-          ).status;
-
-          if (status == 200) {
-            $("#messages").html(
-            `
-            <div
-                class="alert alert-success"
-                role="alert"
-
-              >Uploaded successfully</div>
-            `);
-
-          } else {
-            $("#messages").html(
-              `
-              <div
-                  class="alert alert-danger"
-                  role="alert"
-
-                >Uploaded failed</div>
-              `);
-
+          function createFileFromContent(modifiedContent, fileName) {
+            const blob = new Blob([modifiedContent], {type: "text/plain"});
+            const f = new File([blob], fileName, {type: "text/plain"});
+            return f;
           }
-        } else {
+          readFileAndModifyContent(files)
+            .then(modifiedContents => {
+        for(let i = 0; i < files.length; i++) {
+          const file = createFileFromContent(modifiedContents[i], files[i].name);
+          createFileFromContent(modifiedContents[i], files[i].name);
+          data.append("file", file);
+        }
+        const user = "<%= user %>";
+        data.append("user", user);
+        const pathname = window.location.pathname.split("/");
+        const semester = pathname[2];
+        const year = pathname[3];
+        data.append("semester", semester);
+        data.append("year", year);
+        const problems = <%- JSON.stringify(problems) %>;
+        data.append("problems", JSON.stringify(problems));
+        data.append("index", index);
+        return fetch("/submit", {
+          method: "POST",
+          body: data,
+        });
+      })
+      .then(response => {
+        const status = response.status;
+        if (status == 200) {
           $("#messages").html(
-            `
-            <div
-                class="alert alert-danger"
-                role="alert"
-
-              >No file uploaded</div>
-            `);
-
+          `
+          <div
+          class="alert alert-success"
+          role="alert"
+          >Uploaded successfully</div>
+          `);
+        } else {
+        $("#messages").html(
+          `
+          <div
+          class="alert alert-danger"
+          role="alert"
+          >Uploaded failed</div>
+          `);
+        }
+        })
+        .catch(error => {
+          console.error("Error reading or modifying file:", error);
+        });
         }
       });
     </script>
