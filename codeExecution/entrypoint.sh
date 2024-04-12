@@ -52,10 +52,11 @@ compile_run_code() {
     runtime_status=$?
     # If the exit status is 124 then notify user 
     if [ $runtime_status -eq 124 ]; then
-    echo "Runtime took longer than 60s" > "$program_output"
+    echo "Runtime took longer than 60s"  > "$program_output"
     else
         # Send the output of the code to the program_output file
         echo "$runtime" &> "$program_output"
+        sed -i '50001, $ d' "$program_output"
         # Judge the code with the test file and user program
         python3 "$judging_prog" "$test_file" ./user_program 1> $score_output
     fi
@@ -74,7 +75,8 @@ run_interpreted_code() {
     echo "Runtime took longer than 10s" > "$program_output"
     else
         # Send the output of the code to the program_output file
-        echo "$runtime" &> "$program_output"
+         echo "$runtime" &> "$program_output"
+         sed -i '50001, $ d' "$program_output"
         # Judge the code with the test file and user program
         python3 "$judging_prog" "$test_file" "$interpreter" "${file_array[0]}" &>$score_output
     fi
