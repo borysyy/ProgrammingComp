@@ -468,23 +468,11 @@ app.post("/submit", upload.array("file"), async (req, res) => {
     username,
     teamname,
     problem_name,
+    scores,
+    TotalScore,
+    numberOfProblems,
+    problems,
   });
-
-  let judge = 0;
-  for (let i = 0; i < numberOfProblems; ++i) {
-    scores[i] = await SPCP.getHighestScoreForProblem(
-      semester,
-      year,
-      teamname,
-      problem_name
-    );
-    judge += scores[i];
-    console.log(i + ": " + JSON.stringify(scores[i]));
-  }
-
-  if (TotalScore < judge) {
-    await SPCP.updateScore(teamname, semester, year, judge);
-  }
 
   res.sendStatus(200);
 });
@@ -503,6 +491,10 @@ codeQueue.process(async (job, done) => {
     username,
     teamname,
     problem_name,
+    scores,
+    TotalScore,
+    numberOfProblems,
+    problems,
   } = job.data;
 
   // Create a Docker container
@@ -559,6 +551,23 @@ codeQueue.process(async (job, done) => {
         problem_name,
         scoreOutput
       );
+
+      let judge = 0;
+      for (let i = 0; i < numberOfProblems; ++i) {
+        scores[i] = await SPCP.getHighestScoreForProblem(
+          semester,
+          year,
+          teamname,
+          problems[i].problem_name
+        );
+        console.log(scores[i]);
+        judge += scores[i];
+        console.log(i + ": " + JSON.stringify(scores[i]));
+      }
+
+      if (TotalScore < judge) {
+        await SPCP.updateScore(teamname, semester, year, judge);
+      }
 
       done();
     } catch (err) {
