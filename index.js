@@ -427,7 +427,7 @@ app.post("/submit", upload.array("file"), async (req, res) => {
   const problems = JSON.parse(req.body.problems);
   const problem_name = problems[req.body.index].problem_name;
   const numberOfProblems = Object.keys(problems).length;
-  let scores = 0;
+  let scores = [];
   const judgingDirectory = `/judgeProgs`;
   const judging_program = `${judgingDirectory}/${
     problems[req.body.index].judge
