@@ -1,6 +1,7 @@
-import subprocess
+import subprocess 
 import sys
-import math
+
+DEBUG = False # set True for extra output
 
 '''
 Runs a program, providing input file through stdin pipe
@@ -27,110 +28,128 @@ def run_program(program_path, input_data, *args):
   return output
 
 
-def score(mine, left, right):
-    gold = "gold"
-    element_cnt = [0] * len(gold)
-    gold_cnt = 0
-    rock_cnt = 0
-
-    i = left
-    while i <= right:
-        if mine[i] in gold:
-            element_cnt[gold.index(mine[i])] += 1
-
-            if (right - i) >= 3:
-                #enough space left for "gold" or "dlog"
-                if (mine[i:i + 4] == "gold") or (mine[i:i + 4] == "dlog"):
-                    gold_cnt += 1
-                    for c in mine[i + 1:i + 4]:
-                        element_cnt[gold.index(c)] += 1
-                    i += 3  # skip past other 3 elements, too
-        else:
-            rock_cnt += 1
-        
-        i += 1  # always go one ahead at least
-     
-    def scalar(x):
-        return 1 + (1200.0) * math.exp(-x / 20000.0) / 100.0
-
-    width = right - left + 1
-    return math.floor(((4 * gold_cnt) + (4 * min(element_cnt) - rock_cnt)) * scalar(width))
-
-
 '''
-NOTE!!!!!!!!!!!
-This judging program is assuming exactly 100,000 chars in the mine
-This final mine data file was generated with the following command:
-    python3 gen_golddigger.py -s 100000 -r 0.25 -l 50
+output: the student program output
+input_data: the data file for the challenge
 '''
-def judge(output):
-  '''
-  Process student output here and return score.
-  '''
-  
-  '''
-  First try to read their potential 10 int positions (5 pairs of left:right)
-  '''
-  integers = []
-  nums = output.split()
-  for n in range(10):
-    try:
-      number = int(nums[n])
-      integers.append(number)
-    except:
-      return -1  # not an integer, not enough integers, or student code crashed
+def judge(output, input_data):
+    '''
+    Process student output here and return score.
+    '''
 
-  # how many pairs of positions are there
-  pair_cnt = len(integers) // 2
-  zones = []
-  for p in range(pair_cnt):
-    pA = p * 2
-    pB = (p * 2) + 1
-    if integers[pA] >= 0 and integers[pA] < 100000 and integers[pB] >= 0 and integers[pB] < 100000:
-      # each position of the pair is in the mine, at least
+    if DEBUG:
+        print(output)
 
-      if integers[pA] <= integers[pB]:
-        # the left position is at least left or the same of/as the right
+    '''
+    Read in the input data file
+    '''
+    all_lines = open(input_data, 'r').read().split('\n')
+    size = int(all_lines[0].split()[1])
+    acorns = int(all_lines[1].split()[1])
+    piles = int(all_lines[2].split()[1])
 
-        zones.append([integers[pA], integers[pB]])
-      else:
-         return -3  # left:right of a pair are out of order
-    else:
-       return -2  # a position is outside the range of the mine
-  pair_cnt = len(zones)
+    raw_yard = [list(x) for x in all_lines[3:] if x]
 
-  '''
-  At this point, the zones are valid left:right pairs in the range of the mine.
-  Check if they overlap/collide.
-  '''
-  p = pair_cnt - 1
-  while p > 0:
-    # check all zones earlier than zone[p] for overlap
-    for i in range(p):
-      collision = True
-      if zones[i][1] < zones[p][0]:
-        collision = False
-      if zones[p][1] < zones[i][0]:
-        collision = False
-      
-      if collision: 
-        return -4  # two zones overlap
-    p -= 1
+    '''
+    Make a Squirrel class to encapsulate its X and Y postions
+    '''
+    class Squirrel:
+        def __init__(self):
+            self.x = -1
+            self.y = -1
 
-  '''
-  If made it here, the 5 zones are all good, so let's find the actual score!
-  '''
-  mine = []
-  with open(sys.argv[1], "r") as f:
-    for c in f.read():
-      if c in "gold-":
-          mine.append(c)
+    loc = Squirrel()
 
-  total = 0
-  for z in zones:
-     total += score(mine, z[0], z[1])
+    '''
+    Generate the empty 2D yard structure from the raw yard input
+    '''
+    yard = [None] * size
+    for i in range(size):
+        yard[i] = [None] * size
 
-  return total
+    '''
+    Populate the yard and position the squirrel
+    '''
+    for row in range(size):
+        for col in range(size):
+            s = raw_yard[row][col]
+            if s.isdigit():
+                yard[row][col] = int(s)
+            elif s == '.':
+                yard[row][col] = 0
+            elif s == '@':
+                loc.x, loc.y = col, row
+                yard[row][col] = 0
+
+    operation_cnt = 0  # No actions by the squirrel yet
+    holding = False  # The squirrel is not holding an acorn
+
+#    while output != None:
+    for c in output:
+        new_operation = False
+        if c == 'W':
+            loc.x = loc.x - 1 if loc.x > 0 else 0
+            new_operation = True
+        elif c == 'E':
+            loc.x = loc.x + 1 if loc.x < size - 1 else size - 1
+            new_operation = True
+        elif c == 'N':
+            loc.y = loc.y - 1 if loc.y > 0 else 0
+            new_operation = True
+        elif c == 'S':
+            loc.y = loc.y + 1 if loc.y < size - 1 else size - 1
+            new_operation = True
+        elif c == 'P' and not holding and yard[loc.y][loc.x] > 0:
+            yard[loc.y][loc.x] -= 1
+            holding = True
+            new_operation = True
+        elif c == 'D' and holding:
+            yard[loc.y][loc.x] += 1
+            holding = False
+            new_operation = True
+
+        if new_operation:
+            operation_cnt += 1
+            if DEBUG:
+                print(loc.x, loc.y)
+#        try:
+#            s = input()
+#        except:
+#            s = None
+
+    def mark_pile(yard, size, x, y):
+        if 0 <= x < size and 0 <= y < size and yard[x][y] > 0:
+            yard[x][y] = 0
+            mark_pile(yard, size, x-1, y)
+            mark_pile(yard, size, x, y-1)
+            mark_pile(yard, size, x, y+1)
+            mark_pile(yard, size, x+1, y)
+
+    piles = 0
+
+    yard_copy = [yard[i][:] for i in range(size)]
+
+    for y in range(size):
+        for x in range(size):
+            if yard_copy[x][y] > 0:
+                mark_pile(yard_copy, size, x, y)
+                piles += 1
+
+    # 2N/3 is the average manhattan distance between 2 point in an NxN grid
+    score = int( (2 * acorns * size**3) / (3 * piles) - operation_cnt )
+    
+    if holding:
+        score // 2
+
+    if DEBUG:
+        for x in yard:
+            print(x)
+        print(loc.x, loc.y)
+        print('piles', piles)
+        print('operation cnt', operation_cnt)
+        print('score ', end = '')
+
+    return score
 
 
 if __name__ == "__main__":
@@ -150,4 +169,4 @@ if __name__ == "__main__":
     output = run_program(program_path, input_data)
 
   # Process the captured output here and print the associated score
-  print(int(judge(output)))
+  print(int(judge(output, input_data)))
