@@ -39,8 +39,8 @@ compile_run_code() {
     # Get the compiler
     compiler="$1"
 
-    # Compile the program, with a 10 second limit, capturing compiler errors
-    timeout 10s "$compiler" -o user_program "${file_array[0]}" 2>$compiler_output 
+    # Compile the program, with a 60 second limit, capturing compiler errors
+    timeout 60s "$compiler" -o user_program "${file_array[0]}" 2>$compiler_output 
 
     if [ -s $compiler_output ]; then
         status="An error has occurred:" 
