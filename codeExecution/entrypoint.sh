@@ -66,19 +66,58 @@ run_interpreted_code() {
     # Get the interpreter
     interpreter="$1"
 
-    # Set the runtime limit to 60 seconds
-    runtime=`timeout 60s "$interpreter" "${file_array[0]}" < "$test_file"`
-    # If the exit status is 124 then notify user 
-    runtime_status=$?
-    if [ $runtime_status -eq 124 ]; then
-    echo "Runtime took longer than 10s" > "$program_output"
-    else
-        # Send the output of the code to the program_output file
-        echo "$runtime" &> "$program_output"
-        # Judge the code with the test file and user program
-        python3 "$judging_prog" "$test_file" "$interpreter" "${file_array[0]}" &>$score_output
+    if [ $interpreter != "javac" ]; then 
+        # Set the runtime limit to 60 seconds
+        runtime=`timeout 60s "$interpreter" "${file_array[0]}" < "$test_file"`
+
+        # If the exit status is 124 then notify user 
+        runtime_status=$?
+
+        if [ $runtime_status -eq 124 ]; then
+            echo "Runtime took longer than 10s" > "$program_output"
+        else
+            # Send the output of the code to the program_output file
+            echo "$runtime" &> "$program_output"
+            # Judge the code with the test file and user program
+            python3 "$judging_prog" "$test_file" "$interpreter" "${file_array[0]}" &>$score_output
+        fi
+
+    elif [ $interpreter == "javac" ]; then
+        # Set the runtime limit to 60 seconds
+        compiletime=`timeout 60s "$interpreter" "${file_array[@]}" < "$test_file"`
+
+        # If the exit status is 124 then notify user 
+        compiletime=$?
+
+        if [ $compiletime -eq 124 ]; then
+            echo "Compiletime longer than 10s" > "$program_output"
+        else
+            for file in "${file_array[@]}"; do
+                if grep -q 'public static void main' "$file"; then
+                    classname=$(basename "$file" .java)
+
+                    # Set the runtime limit to 60 seconds
+                    runtime=`timeout 60s java -classpath "$(dirname "$file")" "$classname" < "$test_file"`
+                    
+                    # If the exit status is 124 then notify user 
+                    runtime_status=$?
+                    
+                    if [ $runtime_status -eq 124 ]; then
+                        echo "Runtime took longer than 10s" > "$program_output"
+                    else
+                        # Send the output of the code to the program_output file
+                        echo "$runtime" &> "$program_output"
+                        # Judge the code with the test file and user program
+                        python3 "$judging_prog" "$test_file" java -classpath "$(dirname "$file")" "$classname" < "$test_file" &>$score_output
+                    fi
+                    break
+                else
+                    echo "Public Static Void Main (String[] args) not found." > "$program_output"
+                fi
+            done
+            
+        fi
     fi
-  
 }
 
 if [ "${#file_array[@]}" -eq 1 ]; then
@@ -123,13 +162,20 @@ if [ "${#file_array[@]}" -eq 1 ]; then
     fi
 
 elif [ "${#file_array[@]}" -gt 1 ]; then
-    javac "${file_array[@]}" 2> $compiler_output
-    if [ $? -eq 0 ]; then
-        for file in "${file_array[@]}"; do
-            classname=$(basename "$file" .java)
-            if grep -q 'public static void main' "$file"; then
-                java -classpath "$(dirname "$file")" "$classname" &> $program_output
-            fi
-        done
+
+    # Check if all files in the array have the .java extension
+    all_java=true
+    for file in "${file_array[@]}"; do
+        if [[ ! "$file" =~ \.java$ ]]; then
+            all_java=false
+            break
+        fi
+    done
+
+    if [ "$all_java" = true ]; then
+        interpreter="javac"
+        run_interpreted_code "$interpreter"
+    else
+        echo "Multiple file support is only available for Java." > $program_output
     fi
 fi
