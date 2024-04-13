@@ -323,6 +323,32 @@ function getTeamScores(semester, year) {
   });
 }
 
+function getNumSubmissions(semester, year) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.all(
+            "select teamname, count(*) as count from submissions WHERE competition_ID = ? group by teamname;",
+            [result.ID],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              } else {
+                return resolve(result);
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+}
+
 module.exports = {
   router,
   createUser,
@@ -336,4 +362,5 @@ module.exports = {
   updateScore,
   getHighestScoreForProblem,
   getTeamScores,
+  getNumSubmissions,
 };

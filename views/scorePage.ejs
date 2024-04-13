@@ -27,14 +27,17 @@
               <tr>
                 <th scope="col">Teamname</th>
                 <th scope="col">Score</th>
+                <th scope="col">Problems Solved</th>
               </tr>
             </thead>
             <tbody>
-              <% for (const team of teams.sort((a,b)=> Number(b.score) -
-              Number(a.score))) {%>
+              <% for (const team of teams.sort((a,b) => ( Number(b.count) -
+              Number(a.count))).sort((a,b)=>Number(b.count) == Number(a.count) ?
+              (Number(b.score) - Number(a.score)): 0 ) ) {%>
               <tr>
                 <td><%= team.teamname %></td>
                 <td><%= team.score %></td>
+                <td><%= team.count %></td>
               </tr>
               <% } %>
             </tbody>
