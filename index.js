@@ -162,7 +162,16 @@ app.get(
       team.count = submission[0]?.count ?? 0;
     }
 
-    res.render("scorePage", { user: req.user, teams });
+    res.render("scorePage", {
+      user: req.user,
+      teams: teams
+        .sort((a, b) => Number(b.count) - Number(a.count))
+        .sort((a, b) =>
+          Number(b.count) == Number(a.count)
+            ? Number(b.score) - Number(a.score)
+            : 0
+        ),
+    });
   }
 );
 
