@@ -361,7 +361,7 @@ app.post(
       ? req.body.email
       : [req.body.email];
     const maxMembers = 4;
-    const emailExpression = new RegExp("^[a-zA-Z]{1,10}@sunypoly.edu$");
+    const emailExpression = new RegExp("^[a-zA-Z0-9]{1,}@sunypoly.edu$");
 
     try {
       for (let i = 0; i < members.length; i++) {
