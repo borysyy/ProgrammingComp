@@ -139,6 +139,21 @@ app.get(
   }
 );
 
+app.get(
+  "/scorePage/:semester/:year",
+  (req, res, next) => {
+    if (req.isAuthenticated()) return next();
+    res.redirect("/login");
+  },
+  async (req, res) => {
+    const teams = await SPCP.getTeamScores(
+      req.params.semester,
+      req.params.year
+    );
+    res.render("scorePage", { user: req.user, teams });
+  }
+);
+
 // Route for the submissions page
 app.get(
   "/submissions/:semester/:year",

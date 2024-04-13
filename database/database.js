@@ -271,8 +271,8 @@ function updateScore(teamname, semester, year, score) {
   });
 }
 
-function getHighestScoreForProblem(semester, year, teamname, problemname){
-return new Promise((resolve, reject) => {
+function getHighestScoreForProblem(semester, year, teamname, problemname) {
+  return new Promise((resolve, reject) => {
     db.get(
       "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
       [semester, year],
@@ -287,8 +287,8 @@ return new Promise((resolve, reject) => {
               if (err) {
                 return reject(err.message);
               }
-   			    console.log(result.score);
-              	return resolve(result.score);
+              console.log(result.score);
+              return resolve(result.score);
             }
           );
         }
@@ -297,6 +297,31 @@ return new Promise((resolve, reject) => {
   });
 }
 
+function getTeamScores(semester, year) {
+  return new Promise((resolve, reject) => {
+    db.get(
+      "SELECT (ID) FROM competitions WHERE semester = ? AND year = ?;",
+      [semester, year],
+      (error, result) => {
+        if (error) {
+          reject(error); // Reject if there's an error during insertion
+        } else {
+          return db.all(
+            "SELECT teamname, score FROM teams WHERE competition_ID = ?;",
+            [result.ID],
+            (err, result) => {
+              if (err) {
+                return reject(err.message);
+              } else {
+                return resolve(result);
+              }
+            }
+          );
+        }
+      }
+    );
+  });
+}
 
 module.exports = {
   router,
@@ -310,4 +335,5 @@ module.exports = {
   getScore,
   updateScore,
   getHighestScoreForProblem,
+  getTeamScores,
 };
