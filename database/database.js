@@ -333,7 +333,7 @@ function getNumSubmissions(semester, year) {
           reject(error); // Reject if there's an error during insertion
         } else {
           return db.all(
-            "select teamname, count(*) as count from submissions WHERE competition_ID = ? group by teamname, problem_name;",
+            "select teamname, count(*) as count from (select * from submissions WHERE competition_ID = ? group by teamname, problem_name) group by teamname;",
             [result.ID],
             (err, result) => {
               if (err) {
