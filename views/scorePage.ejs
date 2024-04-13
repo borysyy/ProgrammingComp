@@ -30,7 +30,8 @@
               </tr>
             </thead>
             <tbody>
-              <% for (const team of teams) {%>
+              <% for (const team of teams.sort((a,b)=> Number(b.score) -
+              Number(a.score))) {%>
               <tr>
                 <td><%= team.teamname %></td>
                 <td><%= team.score %></td>
