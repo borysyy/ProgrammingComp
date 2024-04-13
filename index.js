@@ -150,7 +150,28 @@ app.get(
       req.params.semester,
       req.params.year
     );
-    res.render("scorePage", { user: req.user, teams });
+    const submissions = await SPCP.getNumSubmissions(
+      req.params.semester,
+      req.params.year
+    );
+
+    for (const team of teams) {
+      const submission = submissions.filter(
+        (submission) => submission.teamname == team.teamname
+      );
+      team.count = submission[0]?.count ?? 0;
+    }
+
+    res.render("scorePage", {
+      user: req.user,
+      teams: teams
+        .sort((a, b) => Number(b.count) - Number(a.count))
+        .sort((a, b) =>
+          Number(b.count) == Number(a.count)
+            ? Number(b.score) - Number(a.score)
+            : 0
+        ),
+    });
   }
 );
 

@@ -25,16 +25,19 @@
           <table class="table">
             <thead>
               <tr>
+                <th scope="col">Rank</th>
                 <th scope="col">Teamname</th>
                 <th scope="col">Score</th>
+                <th scope="col">Problems Solved</th>
               </tr>
             </thead>
             <tbody>
-              <% for (const team of teams.sort((a,b)=> Number(b.score) -
-              Number(a.score))) {%>
+              <% for (let i = 0; i < teams.length; i++) {%>
               <tr>
-                <td><%= team.teamname %></td>
-                <td><%= team.score %></td>
+                <td><%= i+1 %></td>
+                <td><%= teams[i].teamname %></td>
+                <td><%= teams[i].score %></td>
+                <td><%= teams[i].count %></td>
               </tr>
               <% } %>
             </tbody>
